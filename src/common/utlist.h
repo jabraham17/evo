@@ -158,8 +158,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                         UTLIST_SV(_ls_q, list);                                \
                         _ls_q = UTLIST_NEXT(_ls_q, list, next);                \
                         UTLIST_RS(list);                                       \
-                        if(!_ls_q)                                             \
-                            break;                                             \
+                        if(!_ls_q) break;                                      \
                     }                                                          \
                     _ls_qsize = _ls_insize;                                    \
                     while(_ls_psize > 0 || (_ls_qsize > 0 && _ls_q)) {         \
@@ -239,8 +238,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                         UTLIST_SV(_ls_q, list);                                \
                         _ls_q = UTLIST_NEXT(_ls_q, list, next);                \
                         UTLIST_RS(list);                                       \
-                        if(!_ls_q)                                             \
-                            break;                                             \
+                        if(!_ls_q) break;                                      \
                     }                                                          \
                     _ls_qsize = _ls_insize;                                    \
                     while((_ls_psize > 0) || ((_ls_qsize > 0) && _ls_q)) {     \
@@ -328,8 +326,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                             _ls_q = UTLIST_NEXT(_ls_q, list, next);            \
                         }                                                      \
                         UTLIST_RS(list);                                       \
-                        if(!_ls_q)                                             \
-                            break;                                             \
+                        if(!_ls_q) break;                                      \
                     }                                                          \
                     _ls_qsize = _ls_insize;                                    \
                     while(_ls_psize > 0 || (_ls_qsize > 0 && _ls_q)) {         \
@@ -513,8 +510,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LL_SEARCH_SCALAR2(head, out, field, val, next)                         \
     do {                                                                       \
         LL_FOREACH2(head, out, next) {                                         \
-            if((out)->field == (val))                                          \
-                break;                                                         \
+            if((out)->field == (val)) break;                                   \
         }                                                                      \
     } while(0)
 
@@ -523,8 +519,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LL_SEARCH2(head, out, elt, cmp, next)                                  \
     do {                                                                       \
         LL_FOREACH2(head, out, next) {                                         \
-            if((cmp(out, elt)) == 0)                                           \
-                break;                                                         \
+            if((cmp(out, elt)) == 0) break;                                    \
         }                                                                      \
     } while(0)
 
@@ -1008,8 +1003,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         } else {                                                               \
             (del)->next->prev = (del)->prev;                                   \
             (del)->prev->next = (del)->next;                                   \
-            if((del) == (head))                                                \
-                (head) = (del)->next;                                          \
+            if((del) == (head)) (head) = (del)->next;                          \
         }                                                                      \
     } while(0)
 
@@ -1040,8 +1034,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CDL_SEARCH_SCALAR2(head, out, field, val, next)                        \
     do {                                                                       \
         CDL_FOREACH2(head, out, next) {                                        \
-            if((out)->field == (val))                                          \
-                break;                                                         \
+            if((out)->field == (val)) break;                                   \
         }                                                                      \
     } while(0)
 
@@ -1050,8 +1043,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CDL_SEARCH2(head, out, elt, cmp, next)                                 \
     do {                                                                       \
         CDL_FOREACH2(head, out, next) {                                        \
-            if((cmp(out, elt)) == 0)                                           \
-                break;                                                         \
+            if((cmp(out, elt)) == 0) break;                                    \
         }                                                                      \
     } while(0)
 

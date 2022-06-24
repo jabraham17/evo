@@ -29,21 +29,23 @@ struct environment* environment_create(size_t width, size_t height);
 void environment_populate(struct environment*, size_t n_creatures);
 
 void environment_get_surroundings(
-    struct environment*, struct creature*, enum surroundings*);
-
+    struct environment*,
+    struct creature*,
+    enum surroundings*);
 
 void environment_run_generation(
-    struct environment*, size_t microcount, int8_t threshold);
+    struct environment*,
+    size_t microcount,
+    int8_t threshold);
 void environment_next_generation(struct environment*);
 void environment_microtick(struct environment*, int8_t threshold);
 
-
 void environment_select(
-    struct environment*, enum selection_criteria selection_criteria);
+    struct environment*,
+    enum selection_criteria selection_criteria);
 // mutation invalidates all locations!!!!
 void environment_mutate(struct environment*);
 void environment_distribute(struct environment*);
-
 
 void environment_destroy(struct environment*);
 

@@ -27,27 +27,47 @@ bool dot_remove_attribute(struct dot_graph* graph, char* key);
 
 bool dot_add_vertex(struct dot_graph* graph, unsigned long id);
 bool dot_set_attribute_on_vertex(
-    struct dot_graph* graph, unsigned long id, char* key, char* value);
+    struct dot_graph* graph,
+    unsigned long id,
+    char* key,
+    char* value);
 char* dot_get_attribute_on_vertex(
-    struct dot_graph* graph, unsigned long id, char* key);
+    struct dot_graph* graph,
+    unsigned long id,
+    char* key);
 bool dot_has_attribute_on_vertex(
-    struct dot_graph* graph, unsigned long id, char* key);
+    struct dot_graph* graph,
+    unsigned long id,
+    char* key);
 bool dot_remove_attribute_on_vertex(
-    struct dot_graph* graph, unsigned long id, char* key);
+    struct dot_graph* graph,
+    unsigned long id,
+    char* key);
 
 bool dot_add_edge(
-    struct dot_graph* graph, unsigned long first, unsigned long second);
+    struct dot_graph* graph,
+    unsigned long first,
+    unsigned long second);
 bool dot_set_attribute_on_edge(
-    struct dot_graph* graph, unsigned long first, unsigned long second,
-    char* key, char* value);
+    struct dot_graph* graph,
+    unsigned long first,
+    unsigned long second,
+    char* key,
+    char* value);
 char* dot_get_attribute_on_edge(
-    struct dot_graph* graph, unsigned long first, unsigned long second,
+    struct dot_graph* graph,
+    unsigned long first,
+    unsigned long second,
     char* key);
 bool dot_has_attribute_on_edge(
-    struct dot_graph* graph, unsigned long first, unsigned long second,
+    struct dot_graph* graph,
+    unsigned long first,
+    unsigned long second,
     char* key);
 bool dot_remove_attribute_on_edge(
-    struct dot_graph* graph, unsigned long first, unsigned long second,
+    struct dot_graph* graph,
+    unsigned long first,
+    unsigned long second,
     char* key);
 
 #endif

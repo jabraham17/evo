@@ -38,7 +38,6 @@ typedef enum {
 #define GENE_OUTPUT_SIZE (GENE_OUTPUT_END - GENE_OUTPUT_START + 1)
 #define GENE_OUTPUT_GET(_input) ((_input) % GENE_OUTPUT_SIZE)
 
-
 typedef enum {
     GENE_INTERNAL_N0,
     GENE_INTERNAL_N1,
@@ -61,7 +60,6 @@ typedef struct {
     };
     int16_t weight : 16;
 } GENE_PACKED connection_t;
-
 
 #define MAX_CONNECTIONS 256
 typedef struct {

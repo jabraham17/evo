@@ -35,7 +35,10 @@ bmp_data_size(size_t width, size_t height, size_t bits_per_pixel) {
 }
 
 static size_t bmp_file_size(
-    size_t header_size, size_t dib_size, size_t width, size_t height,
+    size_t header_size,
+    size_t dib_size,
+    size_t width,
+    size_t height,
     size_t bits_per_pixel) {
     return header_size + dib_size +
            bmp_data_size(width, height, bits_per_pixel);
@@ -48,7 +51,8 @@ static void bmp_create_header(bmp_header_t* header, bmp_dib_t* dib) {
     size_t start_address = 0;
     if(dib->type == BMP_DIB_BITMAPINFOHEADER) {
         file_size = bmp_file_size(
-            sizeof(*header), dib->dib_struct.BITMAPINFOHEADER.header_size,
+            sizeof(*header),
+            dib->dib_struct.BITMAPINFOHEADER.header_size,
             dib->dib_struct.BITMAPINFOHEADER.pixel_width,
             dib->dib_struct.BITMAPINFOHEADER.pixel_height,
             dib->dib_struct.BITMAPINFOHEADER.bits_per_pixel);

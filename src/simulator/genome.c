@@ -61,8 +61,7 @@ static float activation_sigmoid(float value, float weight) {
 }
 // public
 
-int8_t
-genome_express(genome_t* genome, enum surroundings* surroundings) {
+int8_t genome_express(genome_t* genome, enum surroundings* surroundings) {
     if(idx == 0) return INT8_MIN;
     gene_expression_t* gene_expression = &genome->genes[idx];
     if(gene_expression->gene == GENE_INVALID) return INT8_MIN;

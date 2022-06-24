@@ -6,7 +6,9 @@
 // public
 
 struct creature* creature_create(
-    creature_species_t species, size_t n_genes, size_t max_inputs,
+    creature_species_t species,
+    size_t n_genes,
+    size_t max_inputs,
     size_t max_outputs) {
     struct creature* creature = calloc(1, sizeof(*creature));
     creature->species = species;
@@ -21,7 +23,9 @@ void creature_set_location(struct creature* creature, size_t x, size_t y) {
 
 // express the maximum gene
 void creature_tick(
-    struct creature* creature, struct environment* env, int8_t threshold) {
+    struct creature* creature,
+    struct environment* env,
+    int8_t threshold) {
     gene_t max_expressed_gene = GENE_INVALID;
     int8_t max_expressed_value = INT8_MIN;
 
@@ -48,7 +52,6 @@ struct creature* creature_duplicate(struct creature* creature) {
     memcpy(duplicate, creature, sizeof(*duplicate));
     return duplicate;
 }
-
 
 bool creature_intersect(struct creature* c1, struct creature* c2) {
     return point_equals(&c1->location, &c2->location);

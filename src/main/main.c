@@ -36,11 +36,10 @@ int main(UNUSED int argc, UNUSED char** argv) {
     environment_populate(env, 1000);
 
     char buf[20];
-    
+
     img_t* img;
     bmp_t* bmp;
     size_t scale = 2;
-
 
     size_t end = 50;
     for(size_t i = 1; i <= end; i++) {
@@ -69,7 +68,7 @@ int main(UNUSED int argc, UNUSED char** argv) {
         bmp_write_to_file(bmp, buf);
         bmp_destroy(bmp);
         img_destroy(img);
-            
+
         environment_next_generation(env);
     }
 

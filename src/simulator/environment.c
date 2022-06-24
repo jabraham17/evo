@@ -5,7 +5,8 @@
 
 // private
 static bool creature_has_survived(
-    struct environment* env, struct creature* creature,
+    struct environment* env,
+    struct creature* creature,
     enum selection_criteria selection_criteria) {
     switch(selection_criteria) {
         case SELECTION_LEFT: return creature->location.x < (env->width / 2);
@@ -34,7 +35,8 @@ void environment_populate(struct environment* env, size_t n_creatures) {
 
 // FIXME
 void environment_get_surroundings(
-    struct environment* env, struct creature* creature,
+    struct environment* env,
+    struct creature* creature,
     enum surroundings* surroundings) {
     point_t location = creature->location;
     *surroundings = S_NONE;
@@ -59,7 +61,9 @@ void environment_get_surroundings(
 }
 
 void environment_run_generation(
-    struct environment* env, size_t microcount, int8_t threshold) {
+    struct environment* env,
+    size_t microcount,
+    int8_t threshold) {
     for(size_t i = 0; i < microcount; i++) {
         environment_microtick(env, threshold);
     }
@@ -78,7 +82,8 @@ void environment_microtick(struct environment* env, int8_t threshold) {
 }
 
 void environment_select(
-    struct environment* env, enum selection_criteria selection_criteria) {
+    struct environment* env,
+    enum selection_criteria selection_criteria) {
     for(size_t i = 0; i < env->width * env->height; i++) {
         if(env->creatures[i] &&
            !creature_has_survived(env, env->creatures[i], selection_criteria)) {
@@ -96,8 +101,8 @@ void environment_mutate(struct environment* env) {
 
     // we are going to double the creatures
     n_creatures *= 2;
-    //FIXME
-    // go through old creatures, duplicate, mutate, and set into new array
+    // FIXME
+    //  go through old creatures, duplicate, mutate, and set into new array
     for(size_t i = 0; i < env->width * env->height; i++) {
         if(env->creatures[i]) {
             struct creature* creature1 = env->creatures[i];
@@ -113,7 +118,7 @@ void environment_mutate(struct environment* env) {
     env->n_creatures = n_creatures;
 }
 
-//FIXME
+// FIXME
 void environment_distribute(struct environment* env) {
     for(size_t i = 0; i < env->n_creatures; i++) {
         point_t p;

@@ -1,6 +1,6 @@
+#include "common/utlist.h"
 #include "dot.h"
 #include "private_defs.inc"
-#include "common/utlist.h"
 #include <stdlib.h>
 
 struct vertex {
@@ -10,8 +10,7 @@ struct vertex {
 };
 
 static void vertex_destroy_one(struct vertex* vertex) {
-    attribute_destroy_all(vertex->attrs)
-    free(vertex);
+    attribute_destroy_all(vertex->attrs) free(vertex);
 }
 static void vertex_destroy_all(struct vertex* vertexes) {
     struct vertex *vertex_elm, *vertex_tmp;

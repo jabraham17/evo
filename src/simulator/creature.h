@@ -17,7 +17,10 @@ struct creature {
 };
 
 struct creature* creature_create(
-    creature_species_t, size_t n_genes, size_t max_inputs, size_t max_outputs);
+    creature_species_t,
+    size_t n_genes,
+    size_t max_inputs,
+    size_t max_outputs);
 void creature_set_location(struct creature* creature, size_t x, size_t y);
 
 void creature_tick(struct creature*, struct environment*, int8_t threshold);

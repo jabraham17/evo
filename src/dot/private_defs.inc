@@ -15,8 +15,6 @@ static int attribute_remove(struct attribute** attrs, char* key);
 
 static int attribute_cmp(struct attribute* a, struct attribute* b);
 
-
-
 struct vertex;
 static struct vertex* vertex_create(unsigned long id);
 static void vertex_init(struct vertex* vertex, unsigned long id);

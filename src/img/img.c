@@ -32,7 +32,11 @@ img_pixel_t* img_get_pixel(img_t* img, size_t col, size_t row) {
     return img->pixels[idx];
 }
 void img_set_bgr(
-    img_t* img, uint8_t blue, uint8_t green, uint8_t red, size_t col,
+    img_t* img,
+    uint8_t blue,
+    uint8_t green,
+    uint8_t red,
+    size_t col,
     size_t row) {
     img_pixel_t* pixel = make_pixel(blue, green, red);
     img_set_pixel(img, pixel, col, row);

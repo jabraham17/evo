@@ -54,7 +54,7 @@ static struct attribute* attribute_search(struct attribute* attrs, char* key) {
 }
 static int attribute_remove(struct attribute** attrs, char* key) {
     struct attribute* attr = attribute_search(*attrs, key);
-    
+
     if(attr) {
         LL_DELETE(*attrs, attr);
         attribute_destroy_one(attr);
