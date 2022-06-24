@@ -18,21 +18,21 @@ struct environment* environment_create(size_t width, size_t height) {
     struct environment* env = malloc(sizeof(*env));
     env->width = width;
     env->height = height;
-    env->creatures = NULL;
-    env->n_creatures = 0;
+    env->creature_grid =
+        calloc(env->width * env->height, sizeof(env->creature_grid));
     return env;
 }
 
 void environment_populate(struct environment* env, size_t n_creatures) {
-    env->n_creatures = n_creatures;
-    env->creatures = malloc(env->n_creatures * sizeof(env->creatures));
-    for(size_t i = 0; i < env->n_creatures; i++) {
-        // TODO MAKE PARAMETERIZED
-        env->creatures[i] = creature_create(SPECIES_A, 10, 4, 4);
+    for(size_t i = 0; i < n_creatures && i < (env->width * env->height); i++) {
+        // TODO MAKE SPECIES and vars PARAMETERIZED
+        // FIXME
+        env->creatures[i] = creature_create(SPECIES_A, 10);
     }
     environment_distribute(env);
 }
 
+// FIXME
 void environment_get_surroundings(
     struct environment* env, struct creature* creature,
     enum surroundings* surroundings) {
@@ -72,14 +72,16 @@ void environment_next_generation(struct environment* env) {
 
 void environment_microtick(struct environment* env, int8_t threshold) {
     for(size_t i = 0; i < env->n_creatures; i++) {
+        // FIXME
         creature_tick(env->creatures[i], env, threshold);
     }
 }
 
 void environment_select(
     struct environment* env, enum selection_criteria selection_criteria) {
-    for(size_t i = 0; i < env->n_creatures; i++) {
-        if(!creature_has_survived(env, env->creatures[i], selection_criteria)) {
+    for(size_t i = 0; i < env->width * env->height; i++) {
+        if(env->creatures[i] &&
+           !creature_has_survived(env, env->creatures[i], selection_criteria)) {
             creature_destroy(env->creatures[i]);
             env->creatures[i] = NULL;
         }
@@ -89,15 +91,14 @@ void environment_select(
 void environment_mutate(struct environment* env) {
     // count old creatures
     size_t n_creatures = 0;
-    for(size_t i = 0; i < env->n_creatures; i++)
+    for(size_t i = 0; i < env->width * env->height; i++)
         if(env->creatures[i]) n_creatures++;
 
     // we are going to double the creatures
     n_creatures *= 2;
-    struct creature** creatures = malloc(sizeof(*creatures) * n_creatures);
-    size_t creatures_idx = 0;
+    //FIXME
     // go through old creatures, duplicate, mutate, and set into new array
-    for(size_t i = 0; i < env->n_creatures; i++) {
+    for(size_t i = 0; i < env->width * env->height; i++) {
         if(env->creatures[i]) {
             struct creature* creature1 = env->creatures[i];
             struct creature* creature2 = creature_duplicate(creature1);
@@ -112,6 +113,7 @@ void environment_mutate(struct environment* env) {
     env->n_creatures = n_creatures;
 }
 
+//FIXME
 void environment_distribute(struct environment* env) {
     for(size_t i = 0; i < env->n_creatures; i++) {
         point_t p;

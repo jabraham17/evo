@@ -3,76 +3,70 @@
 #ifndef SIMULATOR_GENE_H_
 #define SIMULATOR_GENE_H_
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct environment;
-struct creature; 
+struct creature;
 enum surroundings;
 
 #define GENE_PACKED __attribute__((packed))
 
-// uint8_t
 typedef enum {
-    GENE_INVALID,
+    GENE_INPUT_WALL_LEFT,
+    GENE_INPUT_WALL_RIGHT,
+    GENE_INPUT_WALL_UP,
+    GENE_INPUT_WALL_DOWN,
+    GENE_INPUT_CREATURE_LEFT,
+    GENE_INPUT_CREATURE_RIGHT,
+    GENE_INPUT_CREATURE_UP,
+    GENE_INPUT_CREATURE_DOWN,
+} gene_input_t;
+#define GENE_INPUT_START (GENE_INPUT_WALL_LEFT)
+#define GENE_INPUT_END (GENE_INPUT_CREATURE_DOWN)
+#define GENE_INPUT_SIZE (GENE_INPUT_END - GENE_INPUT_START + 1)
+#define GENE_INPUT_GET(_input) ((_input) % GENE_INPUT_SIZE)
 
-    // gene senses
-    GENE_SENSE_WALL_LEFT,
-    GENE_SENSE_WALL_RIGHT,
-    GENE_SENSE_WALL_UP,
-    GENE_SENSE_WALL_DOWN,
-    GENE_SENSE_CREATURE_LEFT,
-    GENE_SENSE_CREATURE_RIGHT,
-    GENE_SENSE_CREATURE_UP,
-    GENE_SENSE_CREATURE_DOWN,
-
-    // gene actions
-    GENE_ACTION_MOVE_LEFT,
-    GENE_ACTION_MOVE_RIGHT,
-    GENE_ACTION_MOVE_UP,
-    GENE_ACTION_MOVE_DOWN,
-
-    GENE_INTERNAL,
-
-} gene_t;
-#define GENE_SIZE (GENE_INTERNAL - GENE_INVALID - 1)
-// inclusive
-#define GENE_FIRST (GENE_SENSE_WALL_LEFT)
-#define GENE_LAST (GENE_INTERNAL)
-#define GENE_FIRST_SENSE (GENE_SENSE_WALL_LEFT)
-#define GENE_LAST_SENSE (GENE_SENSE_CREATURE_DOWN)
-#define GENE_FIRST_ACTION (GENE_ACTION_MOVE_LEFT)
-#define GENE_LAST_ACTION (GENE_ACTION_MOVE_DOWN)
-
-// uint8_t
 typedef enum {
-    ACT_LINEAR,
-    ACT_SIGMOID,
-    // ACT_RELU,
-    // ACT_TANH,
-} gene_activation_t;
-// inclusive
-#define ACTIVATION_FIRST (ACT_SIGMOID)
-#define ACTIVATION_LAST (ACT_SIGMOID)
+    GENE_OUTPUT_MOVE_LEFT,
+    GENE_OUTPUT_MOVE_RIGHT,
+    GENE_OUTPUT_MOVE_UP,
+    GENE_OUTPUT_MOVE_DOWN,
+} gene_output_t;
+#define GENE_OUTPUT_START (GENE_OUTPUT_MOVE_LEFT)
+#define GENE_OUTPUT_END (GENE_OUTPUT_MOVE_DOWN)
+#define GENE_OUTPUT_SIZE (GENE_OUTPUT_END - GENE_OUTPUT_START + 1)
+#define GENE_OUTPUT_GET(_input) ((_input) % GENE_OUTPUT_SIZE)
 
-#define GENE_MAX_INPUTS 8
-#define GENE_MAX_OUTPUTS 8
+
+typedef enum {
+    GENE_INTERNAL_N0,
+    GENE_INTERNAL_N1,
+    GENE_INTERNAL_N2,
+} gene_internal_t;
+#define GENE_INTERNAL_START (GENE_INTERNAL_N0)
+#define GENE_INTERNAL_END (GENE_INTERNAL_N2)
+#define GENE_INTERNAL_SIZE (GENE_INTERNAL_END - GENE_INTERNAL_START + 1)
+#define GENE_INTERNAL_GET(_input) ((_input) % GENE_INTERNAL_SIZE)
 
 typedef struct {
-    uint8_t gene;
-    int8_t weight; // between -128 and 127, scaled to whatever we decide later
-    uint8_t activation;
+    union {
+        struct {
+            uint8_t source_type : 1; // 1 for input, 0 for internal
+            uint8_t source_id : 7;
+            uint8_t sink_type : 1; // 1 for output, 0 for internal
+            uint8_t sink_id : 7;
+        };
+        uint16_t gene;
+    };
+    int16_t weight : 16;
+} GENE_PACKED connection_t;
 
-    uint8_t inputs[GENE_MAX_INPUTS];   // index into genome, an index of zero is
-                                       // no input
-    uint8_t outputs[GENE_MAX_OUTPUTS]; // index into genome, an index of zero is
-                                       // no output
-} GENE_PACKED gene_expression_t;
 
-#define GENOME_SIZE 255
-
+#define MAX_CONNECTIONS 256
 typedef struct {
-    gene_expression_t genes[GENOME_SIZE+1]; // gene zero must be empty, so one extra
+    connection_t connections[MAX_CONNECTIONS];
+    size_t n_connections;
 } GENE_PACKED genome_t;
 
 // gene operation
@@ -83,16 +77,8 @@ typedef struct {
 // gene_expression_t inputs only apply to internal nodes and sense nodes
 // gene_expression_t outputs only apply to internal nodes and action nodes
 
-void gene_expression_init(
-    gene_expression_t*, size_t gene_idx, size_t max_inputs,
-    size_t max_outputs);
+int8_t genome_express(genome_t* genome, enum surroundings* surroundings);
 
-int8_t gene_expression_express(genome_t*, size_t idx, enum surroundings* surroundings);
-
-void genome_init(
-    genome_t* genome, size_t n_genes, size_t max_inputs, size_t max_outputs);
-
-void genome_apply_action(struct environment*,  struct creature*, gene_t);
-void genome_mutate(genome_t*);
+void genome_init(genome_t* genome, size_t n_connections);
 
 #endif

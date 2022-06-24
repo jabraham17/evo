@@ -6,4 +6,6 @@
 
 img_t* viz_dump_environment(struct environment* env, size_t scale);
 
+
+
 #endif

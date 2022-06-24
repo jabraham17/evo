@@ -8,8 +8,7 @@
 struct environment {
     size_t width;
     size_t height;
-    struct creature** creatures;
-    size_t n_creatures;
+    struct creature** creature_grid;
 };
 
 enum surroundings {

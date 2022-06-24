@@ -9,3 +9,8 @@ PointerAlignment: Left
 IndentPPDirectives: BeforeHash
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: false
+
