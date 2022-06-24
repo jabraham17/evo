@@ -2,26 +2,21 @@
 #include "dot.h"
 #include "private_defs.inc"
 #include <stdlib.h>
+#include <string.h>
 
-struct attribute {
-    char key[MAX_ATTRIBUTE_LENGTH];
-    char value[MAX_ATTRIBUTE_LENGTH];
-    struct attribute* next;
-};
-
-static struct attribute* attribute_create(char* key, char* value) {
+struct attribute* attribute_create(char* key, char* value) {
     struct attribute* attr = malloc(sizeof(*attr));
     attribute_init(attr, key, value);
     return attr;
 }
-static void attribute_init(struct attribute* attr, char* key, char* value) {
+void attribute_init(struct attribute* attr, char* key, char* value) {
     memset(attr, 0, sizeof(*attr));
     if(key) strncpy(attr->key, key, MAX_ATTRIBUTE_LENGTH - 1);
     if(value) strncpy(attr->value, value, MAX_ATTRIBUTE_LENGTH - 1);
 }
 
-static void attribute_destroy_one(struct attribute* attr) { free(attr); }
-static void attribute_destroy_all(struct attribute* attrs) {
+void attribute_destroy_one(struct attribute* attr) { free(attr); }
+void attribute_destroy_all(struct attribute* attrs) {
     struct attribute *attr_elm, *attr_tmp;
     LL_FOREACH_SAFE(attrs, attr_elm, attr_tmp) {
         LL_DELETE(attrs, attr_elm);
@@ -29,21 +24,24 @@ static void attribute_destroy_all(struct attribute* attrs) {
     }
 }
 
-static void attribute_set(struct attribute** attrs, char* key, char* value) {
+char* attribute_key(struct attribute* attr) { return attr->key; }
+char* attribute_value(struct attribute* attr) { return attr->value; }
+
+void attribute_set(struct attribute** attrs, char* key, char* value) {
     struct attribute* attr = attribute_search(*attrs, key);
     if(attr)
         if(value) strncpy(attr->value, value, MAX_ATTRIBUTE_LENGTH);
-        else memset(elm->value, 0, MAX_ATTRIBUTE_LENGTH);
+        else memset(attr->value, 0, MAX_ATTRIBUTE_LENGTH);
     else {
         attr = attribute_create(key, value);
         LL_APPEND(*attrs, attr);
     }
 }
-static char* attribute_get(struct attribute* attrs, char* key) {
+char* attribute_get(struct attribute* attrs, char* key) {
     struct attribute* attr = attribute_search(attrs, key);
     return attr ? attr->value : NULL;
 }
-static struct attribute* attribute_search(struct attribute* attrs, char* key) {
+struct attribute* attribute_search(struct attribute* attrs, char* key) {
     struct attribute attr;
     attribute_init(&attr, key, NULL);
 
@@ -52,7 +50,7 @@ static struct attribute* attribute_search(struct attribute* attrs, char* key) {
 
     return elm;
 }
-static int attribute_remove(struct attribute** attrs, char* key) {
+int attribute_remove(struct attribute** attrs, char* key) {
     struct attribute* attr = attribute_search(*attrs, key);
 
     if(attr) {
@@ -62,6 +60,6 @@ static int attribute_remove(struct attribute** attrs, char* key) {
     } else return 0;
 }
 
-static int attribute_cmp(struct attribute* a, struct attribute* b) {
+int attribute_cmp(struct attribute* a, struct attribute* b) {
     return strncmp(a->key, b->key, MAX_ATTRIBUTE_LENGTH);
 }

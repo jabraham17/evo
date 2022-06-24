@@ -1,16 +1,18 @@
 TOPTARGETS=all clean
 
-SUBDIRS= img main simulator viz common
+SUBDIRS= dot img main common simulator viz
 
 .PHONY: $(TOPTARGETS)
 $(TOPTARGETS): $(SUBDIRS)
 
 # dependencies
-main: img simulator viz
+main: img dot simulator viz
 
 simulator: common
 
 img: common
+
+dot: common
 
 .PHONY: $(SUBDIRS)
 $(SUBDIRS):

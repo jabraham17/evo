@@ -3,6 +3,8 @@
 #include "img/img.h"
 #include "simulator/environment.h"
 #include "viz/viz.h"
+#include "dot/dot.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,27 +12,44 @@
 
 int main(UNUSED int argc, UNUSED char** argv) {
 
-    // img_t* img = img_create(100, 100);
-    // for(size_t i = 0; i < 100; i++) {
-    //     for(size_t j = 0; j < 50; j++)
-    //         img_set_bgr(img, 0xFF, 0x00, 0x00, i, j);
-    //     for(size_t j = 50; j < 100; j++)
-    //         img_set_bgr(img, 0x00, 0x00, 0xFF, i, j);
-    // }
+    struct dot_graph* dg = dot_create("hello");
+    dot_add_vertex(dg, 1);
+    dot_add_vertex(dg, 2);
+    dot_set_attribute(dg, "color", "blue");
+    dot_set_attribute_on_vertex(dg, 1, "color", "red");
+    dot_set_attribute_on_vertex(dg, 1, "label", "\"hello world\"");
+    dot_set_attribute_on_vertex(dg, 2, "label", "\"world\"");
+    dot_add_edge(dg, 1, 2);
+    // dot_set_attribute_on_edge(dg, 1, 2, "color", "green");
 
-    // img_t* img = img_create(3, 2);
-    // // RED GREEN BLUE
-    // // BLUE GREEN RED
-    // img_set_bgr(img, 0x00, 0x00, 0xFF, 0, 0);
-    // img_set_bgr(img, 0x00, 0xFF, 0x00, 1, 0);
-    // img_set_bgr(img, 0xFF, 0x00, 0x00, 2, 0);
-    // img_set_bgr(img, 0xFF, 0x00, 0x00, 0, 1);
-    // img_set_bgr(img, 0x00, 0xFF, 0x00, 1, 1);
-    // img_set_bgr(img, 0x00, 0x00, 0xFF, 2, 1);
+    char buf[4096];
+    if(dot_to_string(dg, buf, 4096)) {
+        FILE* fp = fopen("out.dot", "w");
+        fwrite(buf, 4096, 1, fp);
+        fclose(fp);
+    }
 
-    // bmp_t* bmp = bmp_create_from_img(img);
+    img_t* img = img_create(100, 100);
+    for(size_t i = 0; i < 100; i++) {
+        for(size_t j = 0; j < 50; j++)
+            img_set_bgr(img, 0xFF, 0x00, 0x00, i, j);
+        for(size_t j = 50; j < 100; j++)
+            img_set_bgr(img, 0x00, 0x00, 0xFF, i, j);
+    }
 
-    // bmp_write_to_file(bmp, "test.bmp");
+    img_t* img = img_create(3, 2);
+    // RED GREEN BLUE
+    // BLUE GREEN RED
+    img_set_bgr(img, 0x00, 0x00, 0xFF, 0, 0);
+    img_set_bgr(img, 0x00, 0xFF, 0x00, 1, 0);
+    img_set_bgr(img, 0xFF, 0x00, 0x00, 2, 0);
+    img_set_bgr(img, 0xFF, 0x00, 0x00, 0, 1);
+    img_set_bgr(img, 0x00, 0xFF, 0x00, 1, 1);
+    img_set_bgr(img, 0x00, 0x00, 0xFF, 2, 1);
+
+    bmp_t* bmp = bmp_create_from_img(img);
+
+    bmp_write_to_file(bmp, "test.bmp");
 
     struct environment* env = environment_create(128, 128);
     environment_populate(env, 1000);

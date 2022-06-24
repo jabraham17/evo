@@ -86,7 +86,9 @@ int8_t genome_express(genome_t* genome, enum surroundings* surroundings) {
             size_t gene_to_express_idx = gene_expression->inputs[i];
             if(gene_to_express_idx != idx) {
                 int8_t expressed = gene_expression_express(
-                    genome, gene_to_express_idx, surroundings);
+                    genome,
+                    gene_to_express_idx,
+                    surroundings);
                 inputs += scale_to_float(expressed, -1.0, 1.0);
             }
         }
