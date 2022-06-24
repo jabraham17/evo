@@ -13,4 +13,4 @@ AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 BinPackArguments: false
 AllowAllParametersOfDeclarationOnNextLine: false
 BinPackParameters: false
-
+AllowAllArgumentsOnNextLine: false
