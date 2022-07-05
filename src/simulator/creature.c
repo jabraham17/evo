@@ -15,7 +15,10 @@ void creature_init(
     memset(creature->padding, 0, CREATURE_PADDING_SIZE);
 }
 
-void creature_tick(struct creature*, struct environment*, int8_t threshold) {}
+void creature_tick(
+    struct creature* creature,
+    struct environment* env,
+    int8_t threshold) {}
 
 // express the maximum gene
 // void creature_tick(
