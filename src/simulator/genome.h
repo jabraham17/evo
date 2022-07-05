@@ -3,50 +3,11 @@
 #ifndef SIMULATOR_GENE_H_
 #define SIMULATOR_GENE_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-struct environment;
-struct creature;
-enum surroundings;
-
-#define GENE_PACKED __attribute__((packed))
-
-typedef enum {
-    GENE_INPUT_WALL_LEFT,
-    GENE_INPUT_WALL_RIGHT,
-    GENE_INPUT_WALL_UP,
-    GENE_INPUT_WALL_DOWN,
-    GENE_INPUT_CREATURE_LEFT,
-    GENE_INPUT_CREATURE_RIGHT,
-    GENE_INPUT_CREATURE_UP,
-    GENE_INPUT_CREATURE_DOWN,
-} gene_input_t;
-#define GENE_INPUT_START (GENE_INPUT_WALL_LEFT)
-#define GENE_INPUT_END (GENE_INPUT_CREATURE_DOWN)
-#define GENE_INPUT_SIZE (GENE_INPUT_END - GENE_INPUT_START + 1)
-#define GENE_INPUT_GET(_input) ((_input) % GENE_INPUT_SIZE)
-
-typedef enum {
-    GENE_OUTPUT_MOVE_LEFT,
-    GENE_OUTPUT_MOVE_RIGHT,
-    GENE_OUTPUT_MOVE_UP,
-    GENE_OUTPUT_MOVE_DOWN,
-} gene_output_t;
-#define GENE_OUTPUT_START (GENE_OUTPUT_MOVE_LEFT)
-#define GENE_OUTPUT_END (GENE_OUTPUT_MOVE_DOWN)
-#define GENE_OUTPUT_SIZE (GENE_OUTPUT_END - GENE_OUTPUT_START + 1)
-#define GENE_OUTPUT_GET(_input) ((_input) % GENE_OUTPUT_SIZE)
-
-typedef enum {
-    GENE_INTERNAL_N0,
-    GENE_INTERNAL_N1,
-    GENE_INTERNAL_N2,
-} gene_internal_t;
-#define GENE_INTERNAL_START (GENE_INTERNAL_N0)
-#define GENE_INTERNAL_END (GENE_INTERNAL_N2)
-#define GENE_INTERNAL_SIZE (GENE_INTERNAL_END - GENE_INTERNAL_START + 1)
-#define GENE_INTERNAL_GET(_input) ((_input) % GENE_INTERNAL_SIZE)
+typedef uint32_t grid_state_t;
 
 typedef struct {
     union {
@@ -57,15 +18,24 @@ typedef struct {
             uint8_t sink_id : 7;
         };
         uint16_t gene;
+        struct {
+            uint8_t source;
+            uint8_t sink;
+        };
     };
     int16_t weight : 16;
-} GENE_PACKED connection_t;
+} __attribute__((packed)) connection_t;
 
-#define MAX_CONNECTIONS 256
-typedef struct {
+// max size in bytes
+#define GENOME_T_SIZE 128
+#define MAX_CONNECTIONS                                                        \
+    ((GENOME_T_SIZE - sizeof(uint32_t)) / sizeof(connection_t))
+struct genome {
     connection_t connections[MAX_CONNECTIONS];
-    size_t n_connections;
-} GENE_PACKED genome_t;
+    uint32_t n_connections;
+};
+typedef struct genome genome_t;
+_Static_assert(sizeof(genome_t) == GENOME_T_SIZE, "");
 
 // gene operation
 // each input contributes from -1 to 1, times its weight
@@ -75,8 +45,25 @@ typedef struct {
 // gene_expression_t inputs only apply to internal nodes and sense nodes
 // gene_expression_t outputs only apply to internal nodes and action nodes
 
-int8_t genome_express(genome_t* genome, enum surroundings* surroundings);
-
 void genome_init(genome_t* genome, size_t n_connections);
+
+void genome_prune(genome_t* genome);
+
+uint8_t genome_connection_source(connection_t c);
+char* genome_connection_source_str(connection_t c);
+bool genome_connection_source_is_input(connection_t c);
+bool genome_connection_source_is_internal(connection_t c);
+uint16_t genome_connection_source_unique_id(connection_t c);
+
+uint8_t genome_connection_sink(connection_t c);
+char* genome_connection_sink_str(connection_t c);
+bool genome_connection_sink_is_output(connection_t c);
+bool genome_connection_sink_is_internal(connection_t c);
+uint16_t genome_connection_sink_unique_id(connection_t c);
+
+int16_t genome_connection_weight(connection_t c);
+
+int8_t genome_express(genome_t* genome, grid_state_t grid_state);
+void genome_mutate(genome_t* genome);
 
 #endif

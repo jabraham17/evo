@@ -1,11 +1,14 @@
 
 #include "viz.h"
+#include "common/common.h"
 
 img_t* viz_dump_environment(struct environment* env, size_t scale) {
     img_t* img = img_create(env->width * scale, env->height * scale);
-    for(size_t i = 0; i < env->n_creatures; i++) {
-        struct creature* creature = env->creatures[i];
-        if(!creature) continue;
+    for(size_t grid_idx = 0; grid_idx < env->width * env->height; grid_idx++) {
+        struct creature* creature = env->grid[grid_idx];
+        size_t x = common_get_col(grid_idx, env->width);
+        size_t y = common_get_row(grid_idx, env->width);
+        if(creature_is_dead(creature)) continue;
 
         for(size_t j = 0; j < scale; j++)
             for(size_t k = 0; k < scale; k++)
@@ -14,8 +17,8 @@ img_t* viz_dump_environment(struct environment* env, size_t scale) {
                     0x00,
                     0xFF,
                     0x00,
-                    creature->location.x * scale + j,
-                    creature->location.y * scale + k);
+                    x * scale + j,
+                    y * scale + k);
     }
     return img;
 }
