@@ -31,14 +31,17 @@ void dot_destroy(dgraph_t* graph) {
     edge_destroy_all(graph->edges);
     attribute_destroy_all(graph->attrs);
 
+    dgraph_t* children = graph->children;
+
     dgraph_t *graph_elm, *graph_tmp;
-    LL_FOREACH_SAFE2(graph->children, graph_elm, graph_tmp, children) {
-        LL_DELETE2(graph->children, graph_elm, children);
+    LL_FOREACH_SAFE2(children, graph_elm, graph_tmp, children) {
+
+        LL_DELETE2(children, graph_elm, children);
         dot_destroy(graph_elm);
     }
 
-    // free the structure
-    free(graph);
+    // // free the structure
+    // free(graph);
 }
 
 bool dot_to_string(dgraph_t* graph, char* buffer, size_t buffer_size) {
