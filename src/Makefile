@@ -6,7 +6,7 @@ SUBDIRS= dot img common simulator viz evo viewbrain
 $(TOPTARGETS): $(SUBDIRS)
 
 # dependencies
-main: img simulator viz
+evo: img simulator viz common
 
 viewbrain: img simulator viz dot
 

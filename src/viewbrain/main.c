@@ -40,6 +40,7 @@ int main(UNUSED int argc, UNUSED char** argv) {
     } else {
         fprintf(stderr, "Failed to write dot\n");
     }
+    dot_destroy(dg);
 
     return 0;
 }

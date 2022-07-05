@@ -16,7 +16,7 @@ export LIB_DIRECTORY=$(BUILD_DIRECTORY)lib/
 
 export OS=$(shell uname)
 ifeq ($(OS),Linux)
-export CC=/usr/bin/gcc
+export CC=/usr/bin/clang
 export LD:=$(CC)
 export YACC=/usr/bin/bison
 export LEX=/usr/bin/flex
