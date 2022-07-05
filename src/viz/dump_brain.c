@@ -35,12 +35,14 @@ static void connection_to_dot(dgraph_t* dg, connection_t c) {
     sprintf(buf, "%4.3f", weight_f);
     dot_set_attribute_on_edge(dg, source, sink, "xlabel", buf);
     float h = weight >= 0 ? 0.333 : 0.0;
-    float s = scale_to_float(weight >= 0 ? weight : -weight, 0, INT16_MAX, 0.5, 1.0);
+    float s =
+        scale_to_float(weight >= 0 ? weight : -weight, 0, INT16_MAX, 0.5, 1.0);
     float v = 1.0;
     sprintf(buf, "\"%4.3f,%4.3f,%4.3f\"", h, s, v);
     dot_set_attribute_on_edge(dg, source, sink, "color", buf);
 
-    float penwidth = scale_to_float(weight >= 0 ? weight : -weight, 0, INT16_MAX, 1.0, 8.0);
+    float penwidth =
+        scale_to_float(weight >= 0 ? weight : -weight, 0, INT16_MAX, 1.0, 8.0);
     sprintf(buf, "%4.3f", penwidth);
     dot_set_attribute_on_edge(dg, source, sink, "penwidth", buf);
 }

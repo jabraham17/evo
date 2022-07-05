@@ -1,9 +1,9 @@
 
+#include "dot/dot.h"
 #include "img/bmp.h"
 #include "img/img.h"
 #include "simulator/environment.h"
 #include "viz/viz.h"
-#include "dot/dot.h"
 
 #include <stdio.h>
 #include <stdlib.h>

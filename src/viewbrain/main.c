@@ -37,8 +37,7 @@ int main(UNUSED int argc, UNUSED char** argv) {
         } else {
             fwrite(buf, buflen, 1, stdout);
         }
-    }
-    else {
+    } else {
         fprintf(stderr, "Failed to write dot\n");
     }
 

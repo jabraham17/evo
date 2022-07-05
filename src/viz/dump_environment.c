@@ -1,6 +1,6 @@
 
-#include "viz.h"
 #include "common/common.h"
+#include "viz.h"
 
 img_t* viz_dump_environment(struct environment* env, size_t scale) {
     img_t* img = img_create(env->width * scale, env->height * scale);

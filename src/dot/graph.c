@@ -198,8 +198,7 @@ long graph_to_string(
     char name[MAX_ATTRIBUTE_LENGTH];
     if(dot_is_subgraph(graph)) {
         snprintf(name, MAX_ATTRIBUTE_LENGTH, "cluster_%p", graph);
-    }
-    else {
+    } else {
         snprintf(name, MAX_ATTRIBUTE_LENGTH, "\"%s\"", graph->name);
     }
     DOT_PRINT_BUFFER("graph %s {\n", name);
@@ -207,7 +206,7 @@ long graph_to_string(
     if(!dot_is_subgraph(graph)) {
         snprintf(name, MAX_ATTRIBUTE_LENGTH, "%s", graph->name);
         for(size_t i = 0; i < MAX_ATTRIBUTE_LENGTH; i++)
-        if(name[i] == ' ') name[i] = '_';
+            if(name[i] == ' ') name[i] = '_';
     }
 
     indent += 2;
@@ -215,7 +214,6 @@ long graph_to_string(
     // extra buffers
     char prefix[16];
     char postfix[16];
-
 
     // print the graph attrs
     snprintf(prefix, 16, "%*s", (int)indent, "");

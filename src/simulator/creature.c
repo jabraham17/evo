@@ -5,7 +5,6 @@
 #include <string.h>
 // public
 
-
 void creature_init(
     struct creature* creature,
     creature_species_t species,
