@@ -63,6 +63,8 @@ uint16_t genome_connection_sink_unique_id(connection_t c);
 
 int16_t genome_connection_weight(connection_t c);
 
+void genome_normalize(genome_t* genome);
+
 int8_t genome_express(genome_t* genome, grid_state_t grid_state);
 void genome_mutate(genome_t* genome);
 

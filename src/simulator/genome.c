@@ -147,21 +147,36 @@ PRIV_FN float activation_sigmoid(float value, float weight) {
     return (2.0f / (1.0f + (float)exp(-1.0f * value * weight))) - 1.0f;
 }
 
-PRIV_FN bool genome_gene_is_sunk_to(genome_t* genome, uint8_t id) {
+PRIV_FN bool genome_gene_is_sunk_to(genome_t* genome, uint8_t gene) {
     for(size_t i = 0; i < genome->n_connections; i++) {
         // somebody somewhere sinks to the gene
-        if(genome_connection_sink(genome->connections[i]) == id) return true;
+        if(genome->connections[i].sink == gene) return true;
     }
     return false;
 }
 PRIV_FN bool genome_gene_is_sourced(genome_t* genome, uint8_t gene) {
     for(size_t i = 0; i < genome->n_connections; i++) {
         // somebody somewhere uses gene as a source
-        if(genome_connection_source(genome->connections[i]) == gene)
-            return true;
+        if(genome->connections[i].source == gene) return true;
     }
     return false;
 }
+// }PRIV_FN bool genome_gene_is_sunk_to(genome_t* genome, uint8_t gene) {
+//     for(size_t i = 0; i < genome->n_connections; i++) {
+//         // somebody somewhere sinks to the gene
+//         if(genome_connection_sink(genome->connections[i]) == gene) return
+//         true;
+//     }
+//     return false;
+// }
+// PRIV_FN bool genome_gene_is_sourced(genome_t* genome, uint8_t gene) {
+//     for(size_t i = 0; i < genome->n_connections; i++) {
+//         // somebody somewhere uses gene as a source
+//         if(genome_connection_source(genome->connections[i]) == gene)
+//             return true;
+//     }
+//     return false;
+// }
 
 #undef PRIV_FN
 
@@ -176,9 +191,11 @@ void genome_init(genome_t* genome, size_t n_connections) {
         genome->connections[i].weight =
             rand_in_range_inclusive(INT16_MIN, INT16_MAX) & 0xFFFF;
     }
+    genome_normalize(genome);
 }
 
-#include <stdio.h>
+// debug
+// #include <stdio.h>
 
 void genome_prune(genome_t* genome) {
 
@@ -192,17 +209,33 @@ void genome_prune(genome_t* genome) {
         changed = false;
         for(size_t i = 0; i < genome->n_connections; i++) {
             connection_t c = genome->connections[i];
-
-            // if source is internal and never sunk to, remove
-            //  if sink is internal and never sourced, remove
-            // if source and sink are same, points to itself, remove
-            if((genome_connection_sink_is_internal(c) &&
-                genome_connection_source_is_internal(c) &&
-                genome_connection_source(c) == genome_connection_sink(c)) ||
-               (genome_connection_sink_is_internal(c) &&
-                !genome_gene_is_sourced(genome, genome_connection_sink(c))) ||
-               (genome_connection_source_is_internal(c) &&
-                !genome_gene_is_sunk_to(genome, genome_connection_source(c)))) {
+            // A: if source and sink are same, points to itself, remove
+            // B: if source is internal and never sunk to, remove
+            // C: if sink is internal and never sourced, remove
+            // bool A = genome_connection_sink_is_internal(c) &&
+            //     genome_connection_source_is_internal(c) &&
+            //     genome_connection_source(c) == genome_connection_sink(c);
+            // bool B = genome_connection_source_is_internal(c) &&
+            //     !genome_gene_is_sunk_to(genome,
+            //     genome_connection_source(c));
+            // bool C = genome_connection_sink_is_internal(c) &&
+            // !genome_gene_is_sourced(genome, genome_connection_sink(c));
+            bool A = genome_connection_sink_is_internal(c) &&
+                     genome_connection_source_is_internal(c) &&
+                     c.source == c.sink;
+            bool B = genome_connection_source_is_internal(c) &&
+                     !genome_gene_is_sunk_to(genome, c.source);
+            bool C = genome_connection_sink_is_internal(c) &&
+                     !genome_gene_is_sourced(genome, c.sink);
+            // fprintf(
+            //     stderr,
+            //     "%15s -> %-15s A=%d B=%d C=%d\n",
+            //     genome_connection_source_str(c),
+            //     genome_connection_sink_str(c),
+            //     A,
+            //     B,
+            //     C);
+            if(A || B || C) {
                 changed = true;
                 // overwrite this connection with the last connection
                 memmove(
@@ -268,7 +301,8 @@ uint16_t genome_connection_sink_unique_id(connection_t c) {
 
 int16_t genome_connection_weight(connection_t c) { return c.weight; }
 
-// int8_t genome_express(genome_t* genome, enum surroundings* surroundings) {
+// int8_t genome_express(genome_t* genome, enum surroundings* surroundings)
+// {
 //     if(idx == 0) return INT8_MIN;
 //     gene_expression_t* gene_expression = &genome->genes[idx];
 //     if(gene_expression->gene == GENE_INVALID) return INT8_MIN;
@@ -277,9 +311,10 @@ int16_t genome_connection_weight(connection_t c) { return c.weight; }
 //     if(is_sense(gene_expression)) {
 //         int8_t sense = get_sense(surroundings, gene_expression->gene);
 //         float sense_f = scale_to_float(sense, -1.0, 1.0);
-//         float weight = scale_to_float(gene_expression->weight, -4.0, 4.0);
-//         float activation_f =
-//             activation_apply(gene_expression->activation, sense_f, weight);
+//         float weight = scale_to_float(gene_expression->weight,
+//         -4.0, 4.0); float activation_f =
+//             activation_apply(gene_expression->activation, sense_f,
+//             weight);
 //         int8_t activation = scale_to_int8(activation_f, -1.0, 1.0);
 //         return activation;
 //     }
@@ -300,13 +335,23 @@ int16_t genome_connection_weight(connection_t c) { return c.weight; }
 //             }
 //         }
 //         // activate and return
-//         float weight = scale_to_float(gene_expression->weight, -4.0, 4.0);
-//         float activation_f =
-//             activation_apply(gene_expression->activation, inputs, weight);
+//         float weight = scale_to_float(gene_expression->weight,
+//         -4.0, 4.0); float activation_f =
+//             activation_apply(gene_expression->activation, inputs,
+//             weight);
 //         int8_t activation = scale_to_int8(activation_f, -1.0, 1.0);
 //         return activation;
 //     }
 // }
 
+void genome_normalize(genome_t* genome) {
+    for(size_t i = 0; i < genome->n_connections; i++) {
+        genome->connections[i].source_id =
+            genome_connection_source(genome->connections[i]);
+        genome->connections[i].sink_id =
+            genome_connection_sink(genome->connections[i]);
+    }
+}
+
 int8_t genome_express(genome_t* genome, grid_state_t grid_state) {}
-void genome_mutate(genome_t* genome) {}
+void genome_mutate(genome_t* genome) { genome_normalize(genome); }

@@ -47,7 +47,15 @@ static void connection_to_dot(dgraph_t* dg, connection_t c) {
     dot_set_attribute_on_edge(dg, source, sink, "penwidth", buf);
 }
 
+// void viz_creature_debug_print(FILE* fp, struct creature* c) {
+//     for(size_t i = 0; i < c->genome.n_connections; i++) {
+//         connection_t conn = c->genome.connections[i];
+//         fprintf(fp, "0x%4x: %15s -> %-15s: Src[0x%4x] Snk[0x%4x]\n",conn.gene, genome_connection_source_str(conn), genome_connection_sink_str(conn), conn.source, conn.sink );
+//     }
+// }
+
 dgraph_t* viz_dump_creature(struct creature* c) {
+    // viz_creature_debug_print(stderr, c);
     dgraph_t* dg = dot_create("creature brain");
     dot_set_directed(dg, true);
     dot_set_attribute(dg, "splines", "curved");
