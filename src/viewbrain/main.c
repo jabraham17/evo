@@ -41,8 +41,6 @@ int main(UNUSED int argc, UNUSED char** argv) {
         fprintf(stderr, "Failed to write dot\n");
     }
     dot_destroy(dg);
-    // dot_destroy(dg_preprune);
-    // dot_destroy(dg_pruned);
 
     return 0;
 }

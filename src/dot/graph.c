@@ -33,7 +33,7 @@ void dot_destroy(dgraph_t* graph) {
 
     dgraph_t *graph_elm, *graph_tmp;
     LL_FOREACH_SAFE2(graph->children, graph_elm, graph_tmp, children) {
-        if(graph == graph_elm->parent) {// prevents extra nested subgraphs
+        if(graph == graph_elm->parent) { // prevents extra nested subgraphs
             LL_DELETE2(graph->children, graph_elm, children);
             dot_destroy(graph_elm);
             free(graph_elm);
