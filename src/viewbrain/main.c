@@ -15,9 +15,7 @@ int main(UNUSED int argc, UNUSED char** argv) {
     struct creature c;
     creature_init(&c, SPECIES_A, 10);
     dgraph_t* dg_preprune = viz_dump_creature(&c);
-    fprintf(stderr, "n connections %d\n", c.genome.n_connections);
     genome_prune(&c.genome);
-    fprintf(stderr, "n connections %d\n", c.genome.n_connections);
     dgraph_t* dg_pruned = viz_dump_creature(&c);
 
     dgraph_t* dg = dot_create("creature");
