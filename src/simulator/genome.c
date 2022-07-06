@@ -354,4 +354,15 @@ void genome_normalize(genome_t* genome) {
 }
 
 int8_t genome_express(genome_t* genome, grid_state_t grid_state) {}
-void genome_mutate(genome_t* genome) { genome_normalize(genome); }
+void genome_mutate(genome_t* genome) {
+    // randomly select a gene and mutate it
+    size_t gene_idx = rand_max(genome->n_connections);
+    genome->connections[gene_idx].gene =
+        rand_in_range_inclusive(0, UINT16_MAX) & 0xFFFF;
+    genome->connections[gene_idx].weight =
+        rand_in_range_inclusive(INT16_MIN, INT16_MAX) & 0xFFFF;
+
+    // after a mutation, normalize and prune
+    genome_normalize(genome);
+    genome_prune(genome);
+}

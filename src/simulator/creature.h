@@ -28,6 +28,16 @@ void creature_tick(struct creature*, struct environment*, int8_t threshold);
 // chance out of a ten thousand to mutate
 // 100 is a 1% chance
 void creature_mutate(struct creature*, size_t chance);
+#define MUTATION_RATE_100 10000
+#define MUTATION_RATE_75 7500
+#define MUTATION_RATE_50 5000
+#define MUTATION_RATE_25 2500
+#define MUTATION_RATE_10 1000
+#define MUTATION_RATE_5 500
+#define MUTATION_RATE_1 100
+#define MUTATION_RATE_05 50
+#define MUTATION_RATE_01 10
+#define MUTATION_RATE_0 0
 
 bool creature_is_dead(struct creature*);
 bool creature_is_alive(struct creature*);

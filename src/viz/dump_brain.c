@@ -50,7 +50,9 @@ static void connection_to_dot(dgraph_t* dg, connection_t c) {
 // void viz_creature_debug_print(FILE* fp, struct creature* c) {
 //     for(size_t i = 0; i < c->genome.n_connections; i++) {
 //         connection_t conn = c->genome.connections[i];
-//         fprintf(fp, "0x%4x: %15s -> %-15s: Src[0x%4x] Snk[0x%4x]\n",conn.gene, genome_connection_source_str(conn), genome_connection_sink_str(conn), conn.source, conn.sink );
+//         fprintf(fp, "0x%4x: %15s -> %-15s: Src[0x%4x]
+//         Snk[0x%4x]\n",conn.gene, genome_connection_source_str(conn),
+//         genome_connection_sink_str(conn), conn.source, conn.sink );
 //     }
 // }
 

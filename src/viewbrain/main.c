@@ -13,16 +13,20 @@ int main(UNUSED int argc, UNUSED char** argv) {
     srand(time(0));
 
     struct creature c;
-    creature_init(&c, SPECIES_A, 10);
+    creature_init(&c, SPECIES_A, 4);
     dgraph_t* dg_preprune = viz_dump_creature(&c);
     genome_prune(&c.genome);
     dgraph_t* dg_pruned = viz_dump_creature(&c);
+    // genome_mutate(&c.genome);
+    creature_mutate(&c, MUTATION_RATE_100);
+    dgraph_t* dg_mutate = viz_dump_creature(&c);
 
     dgraph_t* dg = dot_create("creature");
     dot_set_directed(dg, true);
     dot_set_attribute(dg, "splines", "curved");
     dot_add_subgraph(dg, dg_preprune);
     dot_add_subgraph(dg, dg_pruned);
+    dot_add_subgraph(dg, dg_mutate);
 
     char buf[8192];
     if(dot_to_string(dg, buf, 8192)) {

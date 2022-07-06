@@ -42,7 +42,7 @@ void creature_tick(
 //     genome_apply_action(env, creature, max_expressed_gene);
 // }
 void creature_mutate(struct creature* creature, size_t chance) {
-    if(rand_max(10000) <= (int)chance) {
+    if(rand_max(MUTATION_RATE_100) < (int)chance) {
         genome_mutate(&creature->genome);
     }
 }
