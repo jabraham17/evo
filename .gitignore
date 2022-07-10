@@ -2,3 +2,5 @@ build
 debug
 .DS_Store
 .vscode
+*.o
+*.d

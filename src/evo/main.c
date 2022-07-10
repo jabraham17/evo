@@ -1,16 +1,40 @@
+#include "viz/viz.h"
 
 #include "dot/dot.h"
 #include "img/bmp.h"
 #include "img/img.h"
 #include "simulator/environment.h"
-#include "viz/viz.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #define UNUSED __attribute((unused))
 
+static void dump_c(struct creature* c, char* name) {
+    dgraph_t* dg = viz_dump_creature(c);
+    char buf[4096];
+    if(dot_to_string(dg, buf, 4096)) {
+        size_t buflen = strlen(buf);
+        if(name != NULL) {
+            char* filename = name;
+            FILE* fp = fopen(filename, "w");
+            fwrite(buf, buflen, 1, fp);
+            fclose(fp);
+        } else {
+            fwrite(buf, buflen, 1, stdout);
+        }
+    } else {
+        fprintf(stderr, "Failed to write dot\n");
+    }
+    dot_destroy(dg);
+}
+
 int main(UNUSED int argc, UNUSED char** argv) {
+    long seed = time(0);
+    fprintf(stderr, "Seed: %ld\n", seed);
+    srand(seed);
 
     // struct dot_graph* dg = dot_create("hello");
     // dot_add_vertex(dg, 1);
@@ -51,16 +75,28 @@ int main(UNUSED int argc, UNUSED char** argv) {
 
     // bmp_write_to_file(bmp, "test.bmp");
 
-    struct environment* env = environment_create(128, 128);
-    environment_add_creatures(env, 1000);
-
-    char buf[20];
-
     img_t* img;
     bmp_t* bmp;
     size_t scale = 2;
 
-    size_t end = 50;
+    struct environment* env = environment_create(256, 256);
+    environment_add_creatures(env, 1000);
+    environment_distribute(env);
+
+    // img = viz_dump_environment(env, scale);
+    // bmp = bmp_create_from_img(img);
+    // bmp_write_to_file(bmp, "test.bmp");
+    // bmp_destroy(bmp);
+    // img_destroy(img);
+
+    // dump_c(&env->creatures[0], "1.dot");
+    // dump_c(&env->creatures[1], "2.dot");
+
+    // return 0;
+
+    char buf[20];
+
+    size_t end = 1;
     for(size_t i = 1; i <= end; i++) {
 
         img = viz_dump_environment(env, scale);

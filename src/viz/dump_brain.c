@@ -1,19 +1,7 @@
+#include "common/common.h"
 #include "viz.h"
 #include <stdbool.h>
 #include <stdio.h>
-
-static float scale_to_float(
-    int16_t value,
-    int16_t oldMin,
-    int16_t oldMax,
-    float floatMin,
-    float floatMax) {
-
-    float result = (floatMax - floatMin) * ((float)value - (float)oldMin) /
-                       ((float)oldMax - (float)oldMin) +
-                   floatMin;
-    return result;
-}
 
 static void connection_to_dot(dgraph_t* dg, connection_t c) {
 
@@ -31,18 +19,17 @@ static void connection_to_dot(dgraph_t* dg, connection_t c) {
     dot_add_edge(dg, source, sink);
     char buf[64];
     int16_t weight = genome_connection_weight(c);
-    float weight_f = scale_to_float(weight, INT16_MIN, INT16_MAX, -4.0, 4.0);
+    float weight_f = scale_w2f(weight, INT16_MIN, INT16_MAX, -4.0, 4.0);
     sprintf(buf, "%4.3f", weight_f);
     dot_set_attribute_on_edge(dg, source, sink, "xlabel", buf);
     float h = weight >= 0 ? 0.333 : 0.0;
-    float s =
-        scale_to_float(weight >= 0 ? weight : -weight, 0, INT16_MAX, 0.5, 1.0);
+    float s = scale_w2f(weight >= 0 ? weight : -weight, 0, INT16_MAX, 0.5, 1.0);
     float v = 1.0;
     sprintf(buf, "\"%4.3f,%4.3f,%4.3f\"", h, s, v);
     dot_set_attribute_on_edge(dg, source, sink, "color", buf);
 
     float penwidth =
-        scale_to_float(weight >= 0 ? weight : -weight, 0, INT16_MAX, 1.0, 8.0);
+        scale_w2f(weight >= 0 ? weight : -weight, 0, INT16_MAX, 1.0, 8.0);
     sprintf(buf, "%4.3f", penwidth);
     dot_set_attribute_on_edge(dg, source, sink, "penwidth", buf);
 }

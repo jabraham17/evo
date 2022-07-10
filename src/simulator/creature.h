@@ -24,7 +24,16 @@ _Static_assert(sizeof(struct creature) == CREATURE_SIZE, "");
 
 void creature_init(struct creature*, creature_species_t, size_t n_genes);
 
-void creature_tick(struct creature*, struct environment*, int8_t threshold);
+void creature_tick(
+    struct creature*,
+    struct environment*,
+    grid_state_t,
+    int8_t threshold);
+void creature_apply_action(
+    struct creature*,
+    struct environment*,
+    creature_action_t);
+
 // chance out of a ten thousand to mutate
 // 100 is a 1% chance
 void creature_mutate(struct creature*, size_t chance);

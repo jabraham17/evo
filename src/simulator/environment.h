@@ -38,6 +38,8 @@ void environment_add_creatures(struct environment*, size_t n_creatures);
 
 grid_state_t
 environment_get_grid_state(struct environment* env, size_t grid_idx);
+size_t
+environment_get_grid_idx(struct environment* env, struct creature* creature);
 
 void environment_run_generation(
     struct environment*,
@@ -52,6 +54,11 @@ void environment_select(
 // mutation invalidates all locations!!!!
 void environment_mutate(struct environment*);
 void environment_distribute(struct environment*);
+
+bool environment_move_creature(
+    struct environment*,
+    size_t grid_idx_src,
+    size_t grid_idx_dst);
 
 size_t environment_number_alive(struct environment*);
 void environment_creature_consolidate(struct environment*);

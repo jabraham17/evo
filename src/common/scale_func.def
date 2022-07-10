@@ -1,0 +1,35 @@
+
+#ifdef SCALE_FUNC
+
+#define _TYPE_MAP_f float
+#define _TYPE_MAP_b int8_t
+#define _TYPE_MAP_w int16_t
+#define _TYPE_MAP_d int32_t
+#define _TYPE_MAP_q int64_t
+#define _TYPE_MAP(t) _TYPE_MAP_##t
+#define TYPE_MAP(t) _TYPE_MAP(t)
+
+SCALE_FUNC(b, b);
+SCALE_FUNC(w, w);
+SCALE_FUNC(d, d);
+SCALE_FUNC(q, q);
+SCALE_FUNC(f, f);
+
+SCALE_FUNC(f, b);
+SCALE_FUNC(b, f);
+SCALE_FUNC(f, w);
+SCALE_FUNC(w, f);
+SCALE_FUNC(f, d);
+SCALE_FUNC(d, f);
+SCALE_FUNC(f, q);
+SCALE_FUNC(q, f);
+
+#undef _TYPE_MAP_f 
+#undef _TYPE_MAP_b 
+#undef _TYPE_MAP_w 
+#undef _TYPE_MAP_d 
+#undef _TYPE_MAP_q 
+#undef _TYPE_MAP
+#undef TYPE_MAP
+
+#endif

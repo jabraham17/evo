@@ -25,7 +25,7 @@ PRIV_FN bool creature_has_survived(
 }
 
 PRIV_FN void reset_grid(struct environment* env) {
-    memset(*env->grid, 0, env->width * env->height * sizeof(env->grid));
+    memset(env->grid, 0, env->width * env->height * sizeof(*env->grid));
 }
 
 PRIV_FN size_t find_next_dead_creature(struct environment* env, size_t start) {
@@ -111,6 +111,15 @@ environment_get_grid_state(struct environment* env, size_t grid_idx) {
     return state;
 }
 
+size_t
+environment_get_grid_idx(struct environment* env, struct creature* creature) {
+    size_t grid_size = env->width * env->height;
+    for(size_t i = 0; i < grid_size; i++) {
+        if(env->grid[i] == creature) return i;
+    }
+    return grid_size;
+}
+
 void environment_run_generation(
     struct environment* env,
     size_t microcount,
@@ -126,8 +135,10 @@ void environment_next_generation(struct environment* env) {
 }
 
 void environment_microtick(struct environment* env, int8_t threshold) {
-    for(size_t i = 0; i < env->n_creatures; i++) {
-        creature_tick(&env->creatures[i], env, threshold);
+    for(size_t grid_idx = 0; grid_idx < env->width * env->height; grid_idx++) {
+        struct creature* creature = env->grid[grid_idx];
+        grid_state_t state = environment_get_grid_state(env, grid_idx);
+        creature_tick(creature, env, state, threshold);
     }
 }
 
@@ -178,6 +189,19 @@ void environment_distribute(struct environment* env) {
                 break;
             }
     }
+}
+
+bool environment_move_creature(
+    struct environment* env,
+    size_t grid_idx_src,
+    size_t grid_idx_dst) {
+    if(creature_is_dead(env->grid[grid_idx_src])) return false;
+    if(creature_is_alive(env->grid[grid_idx_dst])) return false;
+
+    env->grid[grid_idx_dst] = env->grid[grid_idx_src];
+    env->grid[grid_idx_src] = NULL;
+
+    return true;
 }
 
 size_t environment_number_alive(struct environment* env) {

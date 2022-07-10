@@ -45,6 +45,16 @@ _Static_assert(sizeof(genome_t) == GENOME_T_SIZE, "");
 // gene_expression_t inputs only apply to internal nodes and sense nodes
 // gene_expression_t outputs only apply to internal nodes and action nodes
 
+enum creature_action {
+    ACTION_NONE = 0x0,
+    ACTION_MOVE_LEFT = 0x1,
+    ACTION_MOVE_RIGHT = 0x2,
+    ACTION_MOVE_UP = 0x4,
+    ACTION_MOVE_DOWN = 0x8
+};
+typedef uint32_t creature_action_t;
+_Static_assert(sizeof(enum creature_action) == sizeof(creature_action_t), "");
+
 void genome_init(genome_t* genome, size_t n_connections);
 
 void genome_prune(genome_t* genome);
@@ -65,7 +75,8 @@ int16_t genome_connection_weight(connection_t c);
 
 void genome_normalize(genome_t* genome);
 
-int8_t genome_express(genome_t* genome, grid_state_t grid_state);
+creature_action_t
+genome_express(genome_t* genome, grid_state_t grid_state, int8_t threshold);
 void genome_mutate(genome_t* genome);
 
 #endif
