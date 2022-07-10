@@ -29,6 +29,10 @@ all: $(OBJ_PATH) $(TARGET)
 $(OBJ_PATH):
 	$(AT)mkdir -p $@
 
+.PHONY: cppcheck
+cppcheck: $(C_SOURCES)
+	$(AT)cppcheck $(INCLUDE) $^ -q
+
 # not needed, toplevel handles deleting dir
 # .PHONY: clean
 # clean:

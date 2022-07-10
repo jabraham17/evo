@@ -1,4 +1,4 @@
-TOPTARGETS=all clean
+TOPTARGETS=all clean cppcheck
 SUBDIRS= simulator common img viz dot evo dumpbrain
 .PHONY: $(TOPTARGETS)
 $(TOPTARGETS): $(SUBDIRS)
