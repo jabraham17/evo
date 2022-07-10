@@ -129,14 +129,14 @@ bmp_t* bmp_create_from_img(img_t* img) {
 // TODO: rwrite to write to a block of memory and reurn the block of memory
 // then a separate func copies the block of memory to a file
 void bmp_write_to_file(bmp_t* bmp, char* filename) {
-    FILE* fp = fopen(filename, "wb");
-
     void* dib_struct = NULL;
     size_t dib_len = 0;
     if(bmp->dib.type == BMP_DIB_BITMAPINFOHEADER) {
         dib_struct = &bmp->dib.dib_struct.BITMAPINFOHEADER;
         dib_len = sizeof(bmp->dib.dib_struct.BITMAPINFOHEADER);
-    }
+    } else return;
+
+    FILE* fp = fopen(filename, "wb");
 
     fwrite(&bmp->header, sizeof(bmp->header), 1, fp);
     fwrite(dib_struct, dib_len, 1, fp);
