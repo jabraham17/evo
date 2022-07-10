@@ -167,8 +167,6 @@ PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
     uint8_t source = genome_connection_source(gene_connection);
     int16_t weight = genome_connection_weight(gene_connection);
 
-    // printf("start idx %d\n", idx);
-
     if(genome_connection_source_is_input(gene_connection)) {
         int8_t expressed = gene_sense(source, state);
         inputs = scale_b2f(expressed, INT8_MIN, INT8_MAX, -1.0, 1.0);
@@ -182,7 +180,6 @@ PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
             }
         }
     }
-    // printf("stop idx %d\n", idx);
     float weight_f = scale_w2f(weight, INT16_MIN, INT16_MAX, -4.0, 4.0);
     float activated = activation_sigmoid(inputs, weight_f);
     int8_t scaled = scale_f2b(activated, -1.0, 1.0, INT8_MIN, INT8_MAX);
