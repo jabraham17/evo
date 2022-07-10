@@ -10,7 +10,9 @@
 #define UNUSED __attribute((unused))
 
 int main(UNUSED int argc, UNUSED char** argv) {
-    srand(time(0));
+    long seed = time(0);
+    fprintf(stderr, "Seed: %ld\n", seed);
+    srand(seed);
 
     struct creature c;
     creature_init(&c, SPECIES_A, 4);

@@ -1,5 +1,5 @@
 -include $(ROOT_PROJECT_DIRECTORY)options.mk
 -include $(ROOT_PROJECT_DIRECTORY)src/dependencies.mk
-LIBRARIES= $(evo)
-TARGET=$(BIN_DIRECTORY)evo
+LIBRARIES= $(dumpbrain)
+TARGET=$(BIN_DIRECTORY)dumpbrain
 -include $(ROOT_PROJECT_DIRECTORY)src/executable.mk

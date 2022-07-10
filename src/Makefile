@@ -1,24 +1,14 @@
 TOPTARGETS=all clean
-
-SUBDIRS= dot img common simulator viz evo viewbrain
-
+SUBDIRS= simulator common img viz dot evo dumpbrain
 .PHONY: $(TOPTARGETS)
 $(TOPTARGETS): $(SUBDIRS)
 
-# dependencies
-evo: img simulator viz common
+-include $(ROOT_PROJECT_DIRECTORY)options.mk
 
-viewbrain: img simulator viz dot
-
-simulator: common
-
-img: common
-
-dot: common
-
-viz: simulator img dot common
+-include $(ROOT_PROJECT_DIRECTORY)src/dependencies.mk
+$(call make_prereqs)
 
 .PHONY: $(SUBDIRS)
 $(SUBDIRS):
-	@echo "MAKE -C $@ $(MAKECMDGOALS)"
+	@echo "MAKE -C src/$@ $(MAKECMDGOALS)"
 	@$(MAKE) --no-print-directory -C $@ $(MAKECMDGOALS)
