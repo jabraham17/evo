@@ -3,19 +3,32 @@
 #include <stdlib.h>
 
 // [0, n)
-__attribute__((unused)) static int rand_max(int n) {
+__attribute__((unused)) static long rand_max(long n) {
 
-    int limit = RAND_MAX - (RAND_MAX % n);
-    int r;
+    long limit = RAND_MAX - (RAND_MAX % n);
+    long r;
     while((r = rand()) >= limit)
         ;
     return r % n;
 }
+
+// [0, 1]
+__attribute__((unused)) static float randf() {
+    return (float)rand() / (float)RAND_MAX;
+}
+
+// [0, n]
+__attribute__((unused)) static float randf_max(float n) {
+    return (float)rand() / (float)((float)RAND_MAX / n);
+}
+
 // [low, high]
-__attribute__((unused)) static int rand_in_range_inclusive(int low, int high) {
+__attribute__((unused)) static long
+rand_in_range_inclusive(long low, long high) {
     high += 1;
-    int n = high - low;
-    int r = rand_max(n);
+    long n = high - low;
+    long r = rand_max(n);
     return low + r;
 }
+
 #endif

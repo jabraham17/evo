@@ -20,7 +20,7 @@ int main(UNUSED int argc, UNUSED char** argv) {
     genome_prune(&c.genome);
     dgraph_t* dg_pruned = viz_dump_creature(&c);
     // genome_mutate(&c.genome);
-    creature_mutate(&c, MUTATION_RATE_100);
+    creature_mutate(&c, 0.1);
     dgraph_t* dg_mutate = viz_dump_creature(&c);
 
     dgraph_t* dg = dot_create("creature");

@@ -380,7 +380,7 @@ void genome_normalize(genome_t* genome) {
 
 void genome_mutate(genome_t* genome) {
     // n+1 allows mutations to grow new connections
-    int max_index = clampw(genome->n_connections + 1, 0, MAX_CONNECTIONS);
+    int max_index = clampq(genome->n_connections + 1, 0, MAX_CONNECTIONS);
     // randomly select a gene and mutate it
     size_t gene_idx = rand_max(max_index);
     genome->connections[gene_idx].gene =

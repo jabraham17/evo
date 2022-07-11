@@ -5,6 +5,27 @@
 #include <stddef.h>
 #include <stdint.h>
 
+struct environment_args {
+    long seed;
+
+    char* output_dir;
+    size_t output_scale;
+    int callback_tick;
+    int callback_start;
+    int callback_end;
+    int callback_select;
+    size_t callback_tick_freq;
+
+    size_t width;
+    size_t height;
+    size_t n_creatures;
+    size_t n_generations;
+    size_t n_ticks;
+    int threshold;
+    size_t n_connections;
+    float mutation_rate;
+};
+
 // a feature of this environment, all the memory is together
 // there are 2 dynamic allocations, the creatures and the grid
 // the creatures are all allocated in one go, meaning the memory is contiguous
@@ -13,8 +34,8 @@ struct environment {
     size_t height;
     struct creature* creatures;
     size_t n_creatures;
-    size_t max_creatures;
     struct creature** grid; // pointers to `creatures` array
+    struct environment_args* args;
 };
 
 enum grid_state {
@@ -37,13 +58,12 @@ enum selection_criteria { SELECTION_LEFT };
 struct environment_callback_data {
     struct environment* env;
     size_t generation;
-    size_t microtick;
+    size_t tick;
 };
 
-typedef void(*environment_callback_t)(struct environment_callback_data*);
+typedef void (*environment_callback_t)(struct environment_callback_data*);
 
-struct environment*
-environment_create(size_t width, size_t height, size_t n_creatures);
+struct environment* environment_create(struct environment_args*);
 void environment_add_creatures(struct environment*, size_t n_creatures);
 void environment_subtract_creatures(struct environment*, size_t n_creatures);
 void environment_set_creatures(struct environment*, size_t n_creatures);
@@ -55,9 +75,6 @@ environment_get_grid_idx(struct environment* env, struct creature* creature);
 
 void environment_run_simulation(
     struct environment*,
-    size_t generations,
-    size_t microcount,
-    int8_t threshold,
     environment_callback_t generation_start_callback,
     environment_callback_t microtick_callback,
     environment_callback_t generation_end_callback,
@@ -66,11 +83,9 @@ void environment_run_simulation(
 void environment_run_generation(
     struct environment*,
     size_t generation,
-    size_t microcount,
-    int8_t threshold,
     environment_callback_t callback);
 void environment_next_generation(struct environment*);
-void environment_microtick(struct environment*, int8_t threshold);
+void environment_microtick(struct environment*);
 
 void environment_select(
     struct environment*,

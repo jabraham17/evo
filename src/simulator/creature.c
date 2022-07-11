@@ -19,11 +19,10 @@ void creature_init(
 void creature_tick(
     struct creature* creature,
     struct environment* env,
-    grid_state_t grid_state,
-    int8_t threshold) {
+    grid_state_t grid_state) {
     if(!creature) return;
     creature_action_t action =
-        genome_express(&creature->genome, grid_state, threshold);
+        genome_express(&creature->genome, grid_state, env->args->threshold);
     creature_apply_action(creature, env, action);
 }
 
@@ -104,8 +103,8 @@ void creature_apply_action(
 //     }
 //     genome_apply_action(env, creature, max_expressed_gene);
 // }
-void creature_mutate(struct creature* creature, size_t chance) {
-    if(rand_max(MUTATION_RATE_100) < (int)chance) {
+void creature_mutate(struct creature* creature, float chance) {
+    if(randf() < chance) {
         genome_mutate(&creature->genome);
     }
 }
