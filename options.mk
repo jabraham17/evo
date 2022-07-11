@@ -56,6 +56,7 @@ override CFLAGS+= -DOS_SPECIFIC=$(OS) -Wno-comment
 
 ifeq ($(DEBUG),1)
 override CFLAGS+= -DDEBUG=1 -g -O0 
+override LDFLAGS+= -g
 override CFLAGS+= -DROOT_PROJECT_DIRECTORY="\"$(ROOT_PROJECT_DIRECTORY)\""
 else
 override CFLAGS+= -O3

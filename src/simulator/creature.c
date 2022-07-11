@@ -36,52 +36,49 @@ void creature_apply_action(
     if(grid_idx >= grid_size) return;
 
     while(action != ACTION_NONE) {
-        switch(action) {
-            case ACTION_MOVE_LEFT: {
-                size_t x = common_get_col(grid_idx, env->width);
-                if(x > 0) x--;
-                size_t new_grid_idx = common_get_idx(
-                    x,
-                    common_get_row(grid_idx, env->width),
-                    env->width);
-                environment_move_creature(env, grid_idx, new_grid_idx);
-                action &= ~ACTION_MOVE_LEFT;
-                break;
-            }
-            case ACTION_MOVE_RIGHT: {
-                size_t x = common_get_col(grid_idx, env->width);
-                if(x < env->width - 1) x++;
-                size_t new_grid_idx = common_get_idx(
-                    x,
-                    common_get_row(grid_idx, env->width),
-                    env->width);
-                environment_move_creature(env, grid_idx, new_grid_idx);
-                action &= ~ACTION_MOVE_RIGHT;
-                break;
-            }
-            case ACTION_MOVE_UP: {
-                size_t y = common_get_row(grid_idx, env->width);
-                if(y > 0) y--;
-                size_t new_grid_idx = common_get_idx(
-                    common_get_col(grid_idx, env->width),
-                    y,
-                    env->width);
-                environment_move_creature(env, grid_idx, new_grid_idx);
-                action &= ~ACTION_MOVE_UP;
-                break;
-            }
-            case ACTION_MOVE_DOWN: {
-                size_t y = common_get_row(grid_idx, env->width);
-                if(y < env->height - 1) y++;
-                size_t new_grid_idx = common_get_idx(
-                    common_get_col(grid_idx, env->width),
-                    y,
-                    env->width);
-                environment_move_creature(env, grid_idx, new_grid_idx);
-                action &= ~ACTION_MOVE_DOWN;
-                break;
-            }
-            default: break;
+        if(action & ACTION_MOVE_LEFT) {
+            size_t x = common_get_col(grid_idx, env->width);
+            if(x > 0) x--;
+            size_t new_grid_idx = common_get_idx(
+                x,
+                common_get_row(grid_idx, env->width),
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_LEFT;
+            break;
+        }
+        if(action & ACTION_MOVE_RIGHT) {
+            size_t x = common_get_col(grid_idx, env->width);
+            if(x < env->width - 1) x++;
+            size_t new_grid_idx = common_get_idx(
+                x,
+                common_get_row(grid_idx, env->width),
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_RIGHT;
+            break;
+        }
+        if(action & ACTION_MOVE_UP) {
+            size_t y = common_get_row(grid_idx, env->width);
+            if(y > 0) y--;
+            size_t new_grid_idx = common_get_idx(
+                common_get_col(grid_idx, env->width),
+                y,
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_UP;
+            break;
+        }
+        if(action & ACTION_MOVE_DOWN) {
+            size_t y = common_get_row(grid_idx, env->width);
+            if(y < env->height - 1) y++;
+            size_t new_grid_idx = common_get_idx(
+                common_get_col(grid_idx, env->width),
+                y,
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_DOWN;
+            break;
         }
     }
 }

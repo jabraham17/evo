@@ -46,6 +46,7 @@ void creature_mutate(struct creature*, size_t chance);
 #define MUTATION_RATE_1 100
 #define MUTATION_RATE_05 50
 #define MUTATION_RATE_01 10
+#define MUTATION_RATE_001 1
 #define MUTATION_RATE_0 0
 
 bool creature_is_dead(struct creature*);

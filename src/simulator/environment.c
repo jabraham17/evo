@@ -28,35 +28,37 @@ PRIV_FN void reset_grid(struct environment* env) {
     memset(env->grid, 0, env->width * env->height * sizeof(*env->grid));
 }
 
-PRIV_FN size_t find_next_dead_creature(struct environment* env, size_t start) {
-    for(size_t i = start; i < env->n_creatures; i++)
-        if(creature_is_dead(&env->creatures[i])) return i;
-    return env->n_creatures; // return size if none found
-}
-PRIV_FN size_t find_next_alive_creature(struct environment* env, size_t start) {
-    for(size_t i = start; i < env->n_creatures; i++)
+PRIV_FN size_t find_last_alive_creature(struct environment* env) {
+    for(size_t i = env->n_creatures - 1; i != (size_t)-1; i--) {
         if(creature_is_alive(&env->creatures[i])) return i;
+    }
     return env->n_creatures; // return size if none found
 }
 
 #undef PRIV_FN
 
 // public
-struct environment* environment_create(size_t width, size_t height) {
+struct environment*
+environment_create(size_t width, size_t height, size_t n_creatures) {
     struct environment* env = malloc(sizeof(*env));
     env->width = width;
     env->height = height;
     env->creatures = NULL;
     env->n_creatures = 0;
-
+    env->max_creatures = n_creatures;
     env->grid = calloc(env->width * env->height, sizeof(*env->grid));
+
+    environment_add_creatures(env, n_creatures);
+    for(size_t i = 0; i < env->n_creatures; i++) {
+        // TODO MAKE SPECIES and vars PARAMETERIZED
+        creature_init(&env->creatures[i], SPECIES_A, 3);
+    }
+    environment_distribute(env);
 
     return env;
 }
 
 void environment_add_creatures(struct environment* env, size_t n_creatures) {
-    reset_grid(env);
-
     // start adding new creatures at the end of the old creature array
     size_t starting = env->n_creatures;
     env->n_creatures += n_creatures;
@@ -66,9 +68,39 @@ void environment_add_creatures(struct environment* env, size_t n_creatures) {
         env->creatures =
             realloc(env->creatures, env->n_creatures * sizeof(*env->creatures));
 
-    for(size_t i = starting; i < env->n_creatures; i++) {
-        // TODO MAKE SPECIES and vars PARAMETERIZED
-        creature_init(&env->creatures[i], SPECIES_A, 10);
+    // zero new creartures
+    memset(
+        &env->creatures[starting],
+        0,
+        (env->n_creatures - starting) * sizeof(*env->creatures));
+}
+
+void environment_subtract_creatures(
+    struct environment* env,
+    size_t n_creatures) {
+
+    if(env->n_creatures > n_creatures) {
+        env->n_creatures -= n_creatures;
+        if(env->creatures == NULL)
+            env->creatures = malloc(env->n_creatures * sizeof(*env->creatures));
+        else
+            env->creatures = realloc(
+                env->creatures,
+                env->n_creatures * sizeof(*env->creatures));
+    } else {
+        env->n_creatures = 0;
+        free(env->creatures);
+        env->creatures = NULL;
+    }
+}
+
+void environment_set_creatures(struct environment* env, size_t n_creatures) {
+
+    if(env->n_creatures == n_creatures) return;
+    else if(env->n_creatures > n_creatures) {
+        environment_subtract_creatures(env, env->n_creatures - n_creatures);
+    } else if(env->n_creatures < n_creatures) {
+        environment_add_creatures(env, n_creatures - env->n_creatures);
     }
 }
 
@@ -120,12 +152,51 @@ environment_get_grid_idx(struct environment* env, struct creature* creature) {
     return grid_size;
 }
 
+void environment_run_simulation(
+    struct environment* env,
+    size_t generations,
+    size_t microcount,
+    int8_t threshold,
+    environment_callback_t generation_start_callback,
+    environment_callback_t microtick_callback,
+    environment_callback_t generation_end_callback,
+    environment_callback_t generation_select_callback) {
+    struct environment_callback_data d;
+    d.env = env;
+
+    for(size_t i = 1; i <= generations; i++) {
+        d.generation = i;
+        d.microtick = 0;
+        if(generation_start_callback) generation_start_callback(&d);
+        environment_run_generation(
+            env,
+            i,
+            microcount,
+            threshold,
+            microtick_callback);
+        if(generation_end_callback) generation_end_callback(&d);
+
+        environment_select(env, SELECTION_LEFT);
+        if(generation_select_callback) generation_select_callback(&d);
+
+        environment_next_generation(env);
+    }
+}
+
 void environment_run_generation(
     struct environment* env,
+    size_t generation,
     size_t microcount,
-    int8_t threshold) {
-    for(size_t i = 0; i < microcount; i++) {
+    int8_t threshold,
+    environment_callback_t callback) {
+    struct environment_callback_data d;
+    d.env = env;
+    d.generation = generation;
+    for(size_t i = 1; i <= microcount; i++) {
         environment_microtick(env, threshold);
+
+        d.microtick = i;
+        if(callback) callback(&d);
     }
 }
 
@@ -137,8 +208,10 @@ void environment_next_generation(struct environment* env) {
 void environment_microtick(struct environment* env, int8_t threshold) {
     for(size_t grid_idx = 0; grid_idx < env->width * env->height; grid_idx++) {
         struct creature* creature = env->grid[grid_idx];
-        grid_state_t state = environment_get_grid_state(env, grid_idx);
-        creature_tick(creature, env, state, threshold);
+        if(creature) {
+            grid_state_t state = environment_get_grid_state(env, grid_idx);
+            creature_tick(creature, env, state, threshold);
+        }
     }
 }
 
@@ -151,26 +224,27 @@ void environment_select(
         }
     }
 }
-// invalidates all locations!!!!
 void environment_mutate(struct environment* env) {
     reset_grid(env);
 
     environment_creature_consolidate(env);
-    size_t n_alive = environment_number_alive(env);
 
-    // this will add n_alive creatures to the existing n_alive creatures
-    // (double the creatures)
-    environment_add_creatures(env, n_alive);
+    size_t n_alive = environment_number_alive(env);
+    // TODO make clampq not clampw
+    size_t n_create = clampw(n_alive * 2, 0, env->max_creatures);
+    environment_set_creatures(env, n_create);
 
     // go through the front half of the array, copy the creature, then mutate
     // both
     for(size_t i = 0; i < n_alive; i++) {
-        struct creature* creature1 = &env->creatures[i];
-        struct creature* creature2 = &env->creatures[n_alive + i];
-        memmove(creature2, creature1, sizeof(*creature1));
-        // 0.1% chance to mutate
-        creature_mutate(creature1, 10);
-        creature_mutate(creature2, 10);
+        struct creature* creature1 = &(env->creatures[i]);
+
+        if(i + n_alive < env->n_creatures) {
+            struct creature* creature2 = &(env->creatures[n_alive + i]);
+            memmove(creature2, creature1, sizeof(struct creature));
+            creature_mutate(creature2, MUTATION_RATE_001);
+        }
+        creature_mutate(creature1, MUTATION_RATE_001);
     }
 }
 
@@ -180,14 +254,15 @@ void environment_distribute(struct environment* env) {
         creature_idx++) {
         // if there is a creature, generate a location
         struct creature* creature = &env->creatures[creature_idx];
-        if(creature_is_alive(creature))
+        if(creature_is_alive(creature)) {
             while(1) {
-                signed long long grid_idx = rand_max(env->width * env->height);
+                size_t grid_idx = rand_max(env->width * env->height);
                 // if there is already a creature there, keep generating
                 if(creature_is_alive(env->grid[grid_idx])) continue;
                 env->grid[grid_idx] = creature;
                 break;
             }
+        }
     }
 }
 
@@ -213,19 +288,20 @@ size_t environment_number_alive(struct environment* env) {
 
 // invalidates all locations!!!!
 void environment_creature_consolidate(struct environment* env) {
-    reset_grid(env);
     // reorder creature array so all alive creatures are at the front
-    size_t next_alive = 0;
-    for(size_t creature_idx = 0; creature_idx < env->width * env->height;
+    // size_t last_alive = env->n_creatures - 1;
+    for(size_t creature_idx = 0; creature_idx < env->n_creatures;
         creature_idx++) {
         if(creature_is_dead(&env->creatures[creature_idx])) {
-            next_alive = find_next_alive_creature(env, creature_idx + 1);
+            size_t last_alive = find_last_alive_creature(env);
             // if no more alive, break
-            if(next_alive >= env->n_creatures) break;
+            if(last_alive == env->n_creatures || last_alive < creature_idx)
+                break;
             memmove(
                 &env->creatures[creature_idx],
-                &env->creatures[next_alive],
-                sizeof(*env->creatures));
+                &env->creatures[last_alive],
+                sizeof(struct creature));
+            memset(&env->creatures[last_alive], 0, sizeof(struct creature));
         }
     }
 }

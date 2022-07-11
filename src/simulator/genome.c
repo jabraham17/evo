@@ -180,9 +180,14 @@ PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
             }
         }
     }
+
     float weight_f = scale_w2f(weight, INT16_MIN, INT16_MAX, -4.0, 4.0);
     float activated = activation_sigmoid(inputs, weight_f);
-    int8_t scaled = scale_f2b(activated, -1.0, 1.0, INT8_MIN, INT8_MAX);
+    int8_t scaled = scale_f2b(activated * 128, -1.0, 1.0, INT8_MIN, INT8_MAX);
+
+    // printf("GENE %s inputs %f weight %f activated %f scaled %d\n",
+    // genome_connection_sink_str(gene_connection), inputs, weight_f, activated,
+    // scaled);
     return scaled;
 }
 
@@ -246,6 +251,10 @@ void genome_prune(genome_t* genome) {
                 memmove(
                     &genome->connections[i],
                     &genome->connections[genome->n_connections - 1],
+                    sizeof(connection_t));
+                memset(
+                    &genome->connections[genome->n_connections - 1],
+                    0,
                     sizeof(connection_t));
                 // reduce the number of connections by 1
                 genome->n_connections--;
@@ -346,6 +355,10 @@ genome_express(genome_t* genome, grid_state_t grid_state, int8_t threshold) {
         if(genome_connection_sink_is_output(c)) {
             int8_t expressed = gene_express(genome, i, grid_state);
             uint8_t action = gene_action(genome_connection_sink(c));
+
+            // printf("GENE %s is expressed %d\n",
+            // genome_connection_sink_str(c), expressed);
+
             if(expressed >= 0 && expressed > threshold) {
                 actions |= action;
             } else if(expressed < 0 && abs(expressed) > threshold) {
@@ -366,8 +379,10 @@ void genome_normalize(genome_t* genome) {
 }
 
 void genome_mutate(genome_t* genome) {
+    // n+1 allows mutations to grow new connections
+    int max_index = clampw(genome->n_connections + 1, 0, MAX_CONNECTIONS);
     // randomly select a gene and mutate it
-    size_t gene_idx = rand_max(genome->n_connections);
+    size_t gene_idx = rand_max(max_index);
     genome->connections[gene_idx].gene =
         rand_in_range_inclusive(0, UINT16_MAX) & 0xFFFF;
     genome->connections[gene_idx].weight =

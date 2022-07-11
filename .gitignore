@@ -4,3 +4,5 @@ debug
 .vscode
 *.o
 *.d
+*.dot
+*.mp4
