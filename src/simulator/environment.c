@@ -240,7 +240,6 @@ void environment_mutate(struct environment* env) {
     }
 }
 
-// FIXME
 void environment_distribute(struct environment* env) {
     for(size_t creature_idx = 0; creature_idx < env->n_creatures;
         creature_idx++) {

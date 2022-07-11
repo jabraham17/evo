@@ -59,72 +59,6 @@ GENE_TEMPLATE(internal, N0, N1, N2)
 
 #define PRIV_FN __attribute__((unused)) static
 
-// return between -128 and 127
-// PRIV_FN int8_t get_sense(enum surroundings* surroundings, gene_t gene) {
-//     switch(gene) {
-//         case GENE_SENSE_WALL_LEFT:
-//             return (*surroundings & S_WALL_LEFT) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_WALL_RIGHT:
-//             return (*surroundings & S_WALL_RIGHT) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_WALL_UP:
-//             return (*surroundings & S_WALL_UP) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_WALL_DOWN:
-//             return (*surroundings & S_WALL_DOWN) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_CREATURE_LEFT:
-//             return (*surroundings & S_CREATURE_LEFT) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_CREATURE_RIGHT:
-//             return (*surroundings & S_CREATURE_RIGHT) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_CREATURE_UP:
-//             return (*surroundings & S_CREATURE_UP) ? INT8_MAX : INT8_MIN;
-//         case GENE_SENSE_CREATURE_DOWN:
-//             return (*surroundings & S_CREATURE_DOWN) ? INT8_MAX : INT8_MIN;
-//         default: return 0;
-//     }
-// }
-
-// int8_t genome_express(genome_t* genome, enum surroundings* surroundings)
-// {
-//     if(idx == 0) return INT8_MIN;
-//     gene_expression_t* gene_expression = &genome->genes[idx];
-//     if(gene_expression->gene == GENE_INVALID) return INT8_MIN;
-//
-//     // if sense, return how much its expressed
-//     if(is_sense(gene_expression)) {
-//         int8_t sense = get_sense(surroundings, gene_expression->gene);
-//         float sense_f = scale_to_float(sense, -1.0, 1.0);
-//         float weight = scale_to_float(gene_expression->weight,
-//         -4.0, 4.0); float activation_f =
-//             activation_apply(gene_expression->activation, sense_f,
-//             weight);
-//         int8_t activation = scale_to_int8(activation_f, -1.0, 1.0);
-//         return activation;
-//     }
-//     // otherwise, we are either internal or action
-//     // either way need to compute all inputs,
-//     // apply activation, and return expression
-//     else {
-//         float inputs = 0;
-//         for(size_t i = 0; i < GENE_MAX_INPUTS; i++) {
-//             // if input is not this gene, express it
-//             size_t gene_to_express_idx = gene_expression->inputs[i];
-//             if(gene_to_express_idx != idx) {
-//                 int8_t expressed = gene_expression_express(
-//                     genome,
-//                     gene_to_express_idx,
-//                     surroundings);
-//                 inputs += scale_to_float(expressed, -1.0, 1.0);
-//             }
-//         }
-//         // activate and return
-//         float weight = scale_to_float(gene_expression->weight,
-//         -4.0, 4.0); float activation_f =
-//             activation_apply(gene_expression->activation, inputs,
-//             weight);
-//         int8_t activation = scale_to_int8(activation_f, -1.0, 1.0);
-//         return activation;
-//     }
-// }
-
 // modified sigmoid, scales between -1 and 1
 PRIV_FN float activation_sigmoid(float value, float weight) {
     return (2.0f / (1.0f + (float)exp(-1.0f * value * weight))) - 1.0f;
@@ -185,9 +119,6 @@ PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
     float activated = activation_sigmoid(inputs, weight_f);
     int8_t scaled = scale_f2b(activated * 128, -1.0, 1.0, INT8_MIN, INT8_MAX);
 
-    // printf("GENE %s inputs %f weight %f activated %f scaled %d\n",
-    // genome_connection_sink_str(gene_connection), inputs, weight_f, activated,
-    // scaled);
     return scaled;
 }
 
@@ -315,37 +246,6 @@ uint16_t genome_connection_sink_unique_id(connection_t c) {
 
 int16_t genome_connection_weight(connection_t c) { return c.weight; }
 
-// this is the complex version
-// creature_action_t
-// genome_express(genome_t* genome, grid_state_t grid_state, int8_t threshold) {
-//     creature_action_t actions[MAX_CONNECTIONS];
-//     int8_t expressionStrength[MAX_CONNECTIONS];
-//     size_t next = 0;
-
-//     // express output genes
-//     for(size_t i = 0; i < genome->n_connections; i++) {
-//         connection_t c = genome->connections[i];
-//         if(genome_connection_sink_is_output(c)) {
-//             int8_t expressed = gene_express(genome, i, grid_state);
-//             uint8_t action = gene_action(genome_connection_sink(c));
-//             if(abs(expressed) > threshold) {
-//                 actions[next] = action;
-//                 expressionStrength[next] = expressed;
-//                 next++;
-//             }
-//         }
-//     }
-
-//     // convert array into single bitmask, if two genes express opposing
-//     things
-//     // cancel each other out for example: strongly not moving left is the
-//     same
-//     // as strongly moving right
-
-//     //todo
-
-// }
-
 creature_action_t
 genome_express(genome_t* genome, grid_state_t grid_state, int8_t threshold) {
     creature_action_t actions = ACTION_NONE;
@@ -355,9 +255,6 @@ genome_express(genome_t* genome, grid_state_t grid_state, int8_t threshold) {
         if(genome_connection_sink_is_output(c)) {
             int8_t expressed = gene_express(genome, i, grid_state);
             uint8_t action = gene_action(genome_connection_sink(c));
-
-            // printf("GENE %s is expressed %d\n",
-            // genome_connection_sink_str(c), expressed);
 
             if(expressed >= 0 && expressed > threshold) {
                 actions |= action;

@@ -213,9 +213,6 @@ int main(UNUSED int argc, UNUSED const char** argv) {
          "RATE"},
         POPT_AUTOHELP POPT_TABLEEND};
 
-    // TO ADD:
-    // selection creteria, species
-
     poptContext optCon = poptGetContext(argv[0], argc, argv, options, 0);
     char c;
     while((c = poptGetNextOpt(optCon)) >= 0) {
