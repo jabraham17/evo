@@ -5,6 +5,7 @@
 #include "img/img.h"
 #include "simulator/environment.h"
 
+#include "common/zlib_wrapper.h"
 #include <popt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,19 @@
 #define BUFFER_MAX 512
 static char buffer[BUFFER_MAX];
 
+#define ENV_COMPRESS(file)                                                     \
+    do {                                                                       \
+        FILE* fp_in = fopen(file, "rb");                                       \
+        strcpy(file + strlen(file), ".gz");                                    \
+        FILE* fp_out = fopen(file, "wb");                                      \
+        int ret = def(fp_in, fp_out, Z_DEFAULT_COMPRESSION);                   \
+        if(ret != Z_OK) zerr(ret);                                             \
+        fclose(fp_in);                                                         \
+        fclose(fp_out);                                                        \
+        file[strlen(file) - 3] = '\0';                                         \
+         remove(file);              \
+        } while(0)
+
 #define ENV_DUMP_TO_FILE(ecd, filename_addon, ...)                             \
     do {                                                                       \
         img_t* img =                                                           \
@@ -32,6 +46,7 @@ static char buffer[BUFFER_MAX];
         bmp_write_to_file(bmp, buffer);                                        \
         bmp_destroy(bmp);                                                      \
         img_destroy(img);                                                      \
+        /*ENV_COMPRESS(buffer);*/                                                  \
     } while(0)
 
 void gen_start_callback(struct environment_callback_data* ecd) {
@@ -64,7 +79,6 @@ void mkdirs(char* dirnames) {
             exit(1);
         }
     }
-    
 }
 
 int main(UNUSED int argc, UNUSED const char** argv) {

@@ -73,8 +73,10 @@ override INCLUDE+=
 override YFLAGS+= -Wall
 override LFLAGS+=
 
+# -L/usr/local/opt/zlib/lib
+# -I/usr/local/opt/zlib/include
 ifeq ($(OS),Darwin)
-override LDFLAGS+= -L/usr/local/opt/llvm/lib -L/usr/local/lib -lpopt
+override LDFLAGS+= -L/usr/local/opt/llvm/lib -L/usr/local/lib -lpopt -lz
 override LDFLAGS_FINAL+= -Wl,-rpath,/usr/local/opt/llvm/lib
 override INCLUDE+= -I/usr/local/opt/llvm/include -I/usr/local/include
 endif

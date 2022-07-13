@@ -1,5 +1,5 @@
 TOPTARGETS=all clean cppcheck
-SUBDIRS= simulator common img viz dot evo dumpbrain
+SUBDIRS= simulator common img viz dot evo dumpbrain zpipe
 .PHONY: $(TOPTARGETS)
 $(TOPTARGETS): $(SUBDIRS)
 
