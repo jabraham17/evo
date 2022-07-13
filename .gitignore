@@ -4,5 +4,10 @@ debug
 .vscode
 *.o
 *.d
+*.png
+*.bmp
 *.dot
 *.mp4
+
+!images
+!images/*
