@@ -145,27 +145,6 @@ environment_get_grid_state(struct environment* env, size_t grid_idx) {
     return state;
 }
 
-size_t
-environment_get_grid_idx(struct environment* env, struct creature* creature) {
-    // use cached value if valid
-    if(creature->state.valid_grid_idx) {
-        return creature->grid_idx;
-    }
-
-    size_t grid_size = env->width * env->height;
-    for(size_t i = 0; i < grid_size; i++) {
-        if(env->grid[i] == creature) {
-            creature->state.valid_grid_idx = 1;
-            creature->grid_idx = i;
-            return i;
-        }
-    }
-
-    // not in grid, invalidate cache
-    creature->state.valid_grid_idx = 0;
-    return grid_size;
-}
-
 void environment_run_simulation(
     struct environment* env,
     environment_callback_t generation_start_callback,
@@ -219,7 +198,7 @@ void environment_microtick(struct environment* env) {
         struct creature* creature = env->grid[grid_idx];
         if(creature) {
             grid_state_t state = environment_get_grid_state(env, grid_idx);
-            creature_tick(creature, env, state);
+            creature_tick(creature, env, grid_idx, state);
         }
     }
 }
@@ -267,8 +246,6 @@ void environment_distribute(struct environment* env) {
                 // if there is already a creature there, keep generating
                 if(creature_is_alive(env->grid[grid_idx])) continue;
                 env->grid[grid_idx] = creature;
-                creature->state.valid_grid_idx = 1;
-                creature->grid_idx = grid_idx;
                 break;
             }
         }
@@ -283,9 +260,8 @@ bool environment_move_creature(
     if(creature_is_alive(env->grid[grid_idx_dst])) return false;
 
     env->grid[grid_idx_dst] = env->grid[grid_idx_src];
+    // src is no longer valid
     env->grid[grid_idx_src] = NULL;
-    env->grid[grid_idx_dst]->state.valid_grid_idx = grid_idx_dst;
-    env->grid[grid_idx_dst]->grid_idx = grid_idx_dst;
 
     return true;
 }

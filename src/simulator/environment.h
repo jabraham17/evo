@@ -81,8 +81,6 @@ void environment_set_creatures(struct environment*, size_t n_creatures);
 
 grid_state_t
 environment_get_grid_state(struct environment* env, size_t grid_idx);
-size_t
-environment_get_grid_idx(struct environment* env, struct creature* creature);
 
 void environment_run_simulation(
     struct environment*,
