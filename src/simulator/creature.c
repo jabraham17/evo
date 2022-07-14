@@ -13,6 +13,8 @@ void creature_init(
     genome_init(&creature->genome, n_genes);
     creature->species = species;
     creature->state.alive = 1;
+    creature->state.valid_grid_idx = 0;
+    creature->grid_idx = 0;
     memset(creature->padding, 0, CREATURE_PADDING_SIZE);
 }
 

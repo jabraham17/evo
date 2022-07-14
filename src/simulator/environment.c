@@ -147,10 +147,22 @@ environment_get_grid_state(struct environment* env, size_t grid_idx) {
 
 size_t
 environment_get_grid_idx(struct environment* env, struct creature* creature) {
+    // use cached value if valid
+    if(creature->state.valid_grid_idx) {
+        return creature->grid_idx;
+    }
+
     size_t grid_size = env->width * env->height;
     for(size_t i = 0; i < grid_size; i++) {
-        if(env->grid[i] == creature) return i;
+        if(env->grid[i] == creature) {
+            creature->state.valid_grid_idx = 1;
+            creature->grid_idx = i;
+            return i;
+        }
     }
+
+    // not in grid, invalidate cache
+    creature->state.valid_grid_idx = 0;
     return grid_size;
 }
 
@@ -255,6 +267,8 @@ void environment_distribute(struct environment* env) {
                 // if there is already a creature there, keep generating
                 if(creature_is_alive(env->grid[grid_idx])) continue;
                 env->grid[grid_idx] = creature;
+                creature->state.valid_grid_idx = 1;
+                creature->grid_idx = grid_idx;
                 break;
             }
         }
@@ -270,6 +284,8 @@ bool environment_move_creature(
 
     env->grid[grid_idx_dst] = env->grid[grid_idx_src];
     env->grid[grid_idx_src] = NULL;
+    env->grid[grid_idx_dst]->state.valid_grid_idx = grid_idx_dst;
+    env->grid[grid_idx_dst]->grid_idx = grid_idx_dst;
 
     return true;
 }

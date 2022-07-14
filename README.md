@@ -110,3 +110,5 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
   - get rid of zlib, write ur own custom compression scheme
     - write bmp rle compression. rudimentary but probably sufficent
     - either use RLE8 with a color table and indexing, or use 24 bit RLE
+- improve build system cross compaitabily and workiung out of the box
+- wasm
