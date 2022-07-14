@@ -5,6 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(THREADED) && THREADED == 1
+    #include "pthreadpool/pool.h"
+#endif
+
 struct environment_args {
     long seed;
 
@@ -24,6 +28,10 @@ struct environment_args {
     int threshold;
     size_t n_connections;
     float mutation_rate;
+
+#if defined(THREADED) && THREADED == 1
+    size_t n_threads;
+#endif
 };
 
 // a feature of this environment, all the memory is together
@@ -35,6 +43,9 @@ struct environment {
     struct creature* creatures;
     size_t n_creatures;
     struct creature** grid; // pointers to `creatures` array
+#if defined(THREADED) && THREADED == 1
+    struct ptp_pool* thread_pool;
+#endif
     struct environment_args* args;
 };
 

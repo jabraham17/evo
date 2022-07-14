@@ -30,8 +30,8 @@ static char buffer[BUFFER_MAX];
         fclose(fp_in);                                                         \
         fclose(fp_out);                                                        \
         file[strlen(file) - 3] = '\0';                                         \
-         remove(file);              \
-        } while(0)
+        remove(file);                                                          \
+    } while(0)
 
 #define ENV_DUMP_TO_FILE(ecd, filename_addon, ...)                             \
     do {                                                                       \
@@ -46,7 +46,7 @@ static char buffer[BUFFER_MAX];
         bmp_write_to_file(bmp, buffer);                                        \
         bmp_destroy(bmp);                                                      \
         img_destroy(img);                                                      \
-        /*ENV_COMPRESS(buffer);*/                                                  \
+        /*ENV_COMPRESS(buffer);*/                                              \
     } while(0)
 
 void gen_start_callback(struct environment_callback_data* ecd) {
@@ -99,7 +99,11 @@ int main(UNUSED int argc, UNUSED const char** argv) {
         .n_ticks = 150,
         .threshold = 80,
         .n_connections = 10,
-        .mutation_rate = 0.01};
+        .mutation_rate = 0.01,
+#if defined(THREADED) && THREADED == 1
+        .n_threads = 1
+#endif
+    };
 
     // https://linux.die.net/man/3/popt
     //  struct poptOption {
@@ -225,7 +229,17 @@ int main(UNUSED int argc, UNUSED const char** argv) {
          0,
          "rate at which mutations occur [0.0, 1.0]",
          "RATE"},
-        POPT_AUTOHELP POPT_TABLEEND};
+#if defined(THREADED) && THREADED == 1
+        {"threads",
+         0,
+         POPT_ARG_LONG | POPT_ARGFLAG_SHOW_DEFAULT,
+         &env_args.n_threads,
+         0,
+         "number of threads to use (>0)",
+         "N"},
+#endif
+        POPT_AUTOHELP POPT_TABLEEND
+    };
 
     poptContext optCon = poptGetContext(argv[0], argc, argv, options, 0);
     char c;

@@ -47,6 +47,10 @@ struct environment* environment_create(struct environment_args* args) {
     env->grid = calloc(env->width * env->height, sizeof(*env->grid));
     env->args = args;
 
+#if defined(THREADED) && THREADED == 1
+    env->thread_pool = pool_create(args->n_threads);
+#endif
+
     environment_add_creatures(env, args->n_creatures);
     for(size_t i = 0; i < env->n_creatures; i++) {
         creature_init(&env->creatures[i], SPECIES_A, env->args->n_connections);
@@ -300,5 +304,10 @@ void environment_creature_consolidate(struct environment* env) {
 void environment_destroy(struct environment* env) {
     free(env->creatures);
     free(env->grid);
+
+#if defined(THREADED) && THREADED == 1
+    pool_destroy(env->thread_pool);
+#endif
+
     free(env);
 }

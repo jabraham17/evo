@@ -80,3 +80,8 @@ override LDFLAGS+= -L/usr/local/opt/llvm/lib -L/usr/local/lib -lpopt -lz
 override LDFLAGS_FINAL+= -Wl,-rpath,/usr/local/opt/llvm/lib
 override INCLUDE+= -I/usr/local/opt/llvm/include -I/usr/local/include
 endif
+
+THREADED=0
+ifeq ($(THREADED),1)
+override CFLAGS+= -DTHREADED=1
+endif
