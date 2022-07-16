@@ -196,6 +196,8 @@ struct ptp_task* pool_submit(
     return task;
 }
 
+unsigned long pool_get_num_threads(struct ptp_pool* pool) {}
+
 // wait for a specific work to complete
 void pool_wait(struct ptp_task* task) {
     // while not done, wait for signal
@@ -207,4 +209,8 @@ void pool_wait(struct ptp_task* task) {
 
     // wait is done, we can destroy the task
     pool_task_destroy(task);
+}
+
+unsigned long pool_get_num_threads(struct ptp_pool* pool) {
+    return pool->n_threads;
 }

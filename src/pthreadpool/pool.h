@@ -18,4 +18,6 @@ struct ptp_task* pool_submit(
 // wait for a specific work to complete
 void pool_wait(struct ptp_task* task);
 
+unsigned long pool_get_num_threads(struct ptp_pool* pool);
+
 #endif
