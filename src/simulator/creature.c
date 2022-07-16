@@ -28,7 +28,7 @@ void creature_tick(
 }
 
 void creature_apply_action(
-    struct creature* creature,
+    __attribute__((unused)) struct creature* creature,
     struct environment* env,
     size_t grid_idx,
     creature_action_t action) {

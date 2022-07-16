@@ -4,8 +4,8 @@
 #include "common.h"
 #include "genome.h"
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct environment;
 typedef enum { SPECIES_A } creature_species_t;
@@ -25,7 +25,11 @@ _Static_assert(sizeof(struct creature) == CREATURE_SIZE, "");
 
 void creature_init(struct creature*, creature_species_t, size_t n_genes);
 
-void creature_tick(struct creature*, struct environment*, size_t grid_idx, grid_state_t);
+void creature_tick(
+    struct creature*,
+    struct environment*,
+    size_t grid_idx,
+    grid_state_t);
 void creature_apply_action(
     struct creature*,
     struct environment*,
