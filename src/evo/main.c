@@ -242,8 +242,16 @@ int main(UNUSED int argc, UNUSED const char** argv) {
     };
 
     poptContext optCon = poptGetContext(argv[0], argc, argv, options, 0);
-    char c;
-    while((c = poptGetNextOpt(optCon)) >= 0) {
+    char rc;
+    while((rc = poptGetNextOpt(optCon)) >= 0) {
+    }
+    if(rc < -1) {
+        fprintf(
+            stderr,
+            "Option Error on '%s': %s\n",
+            poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
+            poptStrerror(rc));
+        exit(1);
     }
 
     fprintf(stderr, "Seed: %ld\n", env_args.seed);
