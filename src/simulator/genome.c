@@ -60,9 +60,32 @@ GENE_TEMPLATE(internal, N0, N1, N2)
 #define PRIV_FN __attribute__((unused)) static
 
 // modified sigmoid, scales between -1 and 1
-PRIV_FN float activation_sigmoid(float value, float weight) {
+PRIV_FN __attribute__((always_inline)) float activation_sigmoid(float value, float weight) {
     return (2.0f / (1.0f + (float)exp(-1.0f * value * weight))) - 1.0f;
 }
+
+
+#ifdef __x86_64__
+#include <immintrin.h>
+PRIV_FN __attribute__((always_inline)) float activation_sigmoid_approx(float value, float weight) {
+    return clampf(value*weight*_mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(1.0f+value*value))),  -1.0f, 1.0f);
+}
+// PRIV_FN __attribute__((always_inline)) int32_t activation_sigmoid_approx3(int32_t value, int32_t weight) {
+//     __m128 value_f = _mm_cvt_si2ss(_mm_set_ps1(0), value);
+//     __m128 weight_f = _mm_cvt_si2ss(_mm_set_ps1(0), weight);
+//     __m128 value_weight = _mm_mul_ss(value_f, weight_f);
+//     __m128 value_2 = _mm_mul_ss(value_f, value_f);
+//     __m128 value_2_plus_1 = _mm_add_ss(value_2, _mm_set_ss(1.0f));
+//     __m128 result = _mm_mul_ss(value_weight, _mm_rsqrt_ss(value_2_plus_1));
+//     return _mm_cvt_ss2si(result);
+// }
+#else
+PRIV_FN __attribute__((always_inline)) float activation_sigmoid_approx(float value, float weight) {
+    return clampf((value * weight)*(1/sqrt(1+value*value)), -1.0f, 1.0f);
+}
+#endif
+
+
 
 PRIV_FN int8_t gene_sense(uint8_t gene, grid_state_t state) {
 #define SENSE_CASE(name)                                                       \
@@ -96,6 +119,7 @@ PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
     // recursively call, sum and apply activation
 
     float inputs = 0;
+    // int16_t inputs = 0;
     connection_t gene_connection = genome->connections[idx];
     // uint8_t gene = genome_connection_sink(gene_connection);
     uint8_t source = genome_connection_source(gene_connection);
@@ -110,13 +134,15 @@ PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
             // if a connection sinks to the source, we need to calculate it
             if(genome_connection_sink(genome->connections[i]) == source) {
                 int8_t expressed = gene_express(genome, i, state);
+                // inputs += expressed;
                 inputs += scale_b2f(expressed, INT8_MIN, INT8_MAX, -1.0, 1.0);
             }
         }
     }
 
     float weight_f = scale_w2f(weight, INT16_MIN, INT16_MAX, -4.0, 4.0);
-    float activated = activation_sigmoid(inputs, weight_f);
+    // float activated = activation_sigmoid(inputs, weight_f);
+    float activated = activation_sigmoid_approx(inputs, weight_f);
     int8_t scaled = scale_f2b(activated * 128, -1.0, 1.0, INT8_MIN, INT8_MAX);
 
     return scaled;
