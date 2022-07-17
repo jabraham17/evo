@@ -66,6 +66,7 @@ override CFLAGS+= -Wall -Wextra
 override CFLAGS+= -masm=intel
 override CFLAGS+= -std=c11
 override CFLAGS+= -D_XOPEN_SOURCE=700
+override CFLAGS+= -ffast-math
 override ASFLAGS+=
 override LDFLAGS+=
 override LDFLAGS_FINAL+=
