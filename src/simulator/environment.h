@@ -64,7 +64,7 @@ enum grid_state {
 typedef uint32_t grid_state_t;
 _Static_assert(sizeof(enum grid_state) == sizeof(grid_state_t), "");
 
-enum selection_criteria { SELECTION_LEFT };
+enum selection_criteria { SELECTION_LEFT, SELECTION_RIGHT, SELECTION_CENTER, SELECTION_BR_CORNER, SELECTION_LONELY };
 
 struct environment_callback_data {
     struct environment* env;

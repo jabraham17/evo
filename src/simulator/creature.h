@@ -43,7 +43,7 @@ void creature_tick(
     grid_state_t,
     struct ts_queue* workqueue);
 #else
-void creature_tick(
+creature_action_t creature_tick(
     struct creature*,
     struct environment*,
     size_t grid_idx,

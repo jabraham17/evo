@@ -51,13 +51,14 @@ void creature_tick(
         (void*)wrap_action(creature, env, grid_idx, action));
 }
 #else
-void creature_tick(
+creature_action_t creature_tick(
     struct creature* creature,
     struct environment* env,
     size_t grid_idx,
     grid_state_t grid_state) {
     creature_action_t action = get_action(creature, env, grid_state);
-    creature_apply_action(creature, env, grid_idx, action);
+    return action;
+    // creature_apply_action(creature, env, grid_idx, action);
 }
 #endif
 

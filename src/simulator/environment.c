@@ -18,9 +18,14 @@ PRIV_FN bool creature_has_survived(
         .y = common_get_row(grid_idx, env->width)};
 
     if(creature_is_dead(env->grid[grid_idx])) return false;
+    grid_state_t gs = environment_get_grid_state(env, grid_idx);
 
     switch(selection_criteria) {
         case SELECTION_LEFT: return location.x < (env->width / 2);
+        case SELECTION_RIGHT: return location.x > (env->width / 2);
+        case SELECTION_CENTER: return location.x > (env->width / 3) && location.x < (2 * env->width / 3);
+        case SELECTION_BR_CORNER: return location.x > (2 * env->width / 4) && location.y > (2 * env->height / 4);
+        case SELECTION_LONELY: return (gs & S_CREATURE_LEFT) || (gs & S_CREATURE_RIGHT) || (gs & S_CREATURE_UP) || (gs & S_CREATURE_DOWN);
         default: return true;
     }
 }
@@ -164,7 +169,7 @@ void environment_run_simulation(
         if(env->args->callback_end && generation_end_callback)
             generation_end_callback(&d);
 
-        environment_select(env, SELECTION_LEFT);
+        environment_select(env, SELECTION_BR_CORNER);
         if(env->args->callback_select && generation_select_callback)
             generation_select_callback(&d);
 
@@ -280,7 +285,8 @@ void environment_microtick(struct environment* env) {
         struct creature* creature = env->grid[grid_idx];
         if(creature) {
             grid_state_t state = environment_get_grid_state(env, grid_idx);
-            creature_tick(creature, env, grid_idx, state);
+            creature_action_t action = creature_tick(creature, env, grid_idx, state);
+            creature_apply_action(creature, env, grid_idx, action);
         }
     }
 }
