@@ -90,6 +90,11 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 - add more complex environments
   - add obstacles to the path
   - load from a file description?
+- write a better expression algorithm that doesn't use recursion, look into using actual matrices
+- threading
+  - dynamically allocate threads instead of statically
+  - improve memory allocation in threads, i think thats part of what slows down threading
+  - we can make better threading with more complex threading, where we tile the grid, and then only synchronize on tile crossing, this will be after other optimizations because it will be a pain
 - make a primitive language to describe simulations
   - language describes the environment, and how the simulation should run
   - can modify the simulation mid run
@@ -97,6 +102,7 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 - report stats of the generations?
   - how many survive
   - genetic diversity
+  - view the most popular brain wiring
 - compress bmps
   - https://zlib.net/zlib_how.html
   - rewrite compression script to do memory to file
@@ -114,3 +120,8 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 - improve build system cross compaitabily and workiung out of the box
     fix libraru includes, things are included where they shouldnt due to overrides of LDLIBS
 - wasm
+- video encode
+- https://www.ffmpeg.org/doxygen/3.3/encode_video_8c-example.html
+
+
+make -B BUILD=omp_build VERBOSE=1 CFLAGS="-fopenmp -mpopcnt" LDLIBS="-lomp"
