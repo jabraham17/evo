@@ -10,14 +10,14 @@ size_t common_get_row(size_t idx, size_t width);
 
 void* common_stack_to_heap(void* stack_ptr, size_t length);
 
-float clampf(float value, float min, float max);
-int8_t clampb(int8_t value, int8_t min, int8_t max);
-int16_t clampw(int16_t value, int16_t min, int16_t max);
-int32_t clampd(int32_t value, int32_t min, int32_t max);
-int64_t clampq(int64_t value, int64_t min, int64_t max);
+__attribute__((always_inline)) float clampf(float value, float min, float max);
+__attribute__((always_inline)) int8_t clampb(int8_t value, int8_t min, int8_t max);
+__attribute__((always_inline)) int16_t clampw(int16_t value, int16_t min, int16_t max);
+__attribute__((always_inline)) int32_t clampd(int32_t value, int32_t min, int32_t max);
+__attribute__((always_inline)) int64_t clampq(int64_t value, int64_t min, int64_t max);
 
 #define SCALE_FUNC(typein, typeout)                                            \
-    TYPE_MAP(typeout)                                                          \
+    __attribute__((always_inline)) TYPE_MAP(typeout)                                                          \
     scale_##typein##2##typeout(                                                \
         TYPE_MAP(typein) value,                                                \
         TYPE_MAP(typein) oldMin,                                               \
