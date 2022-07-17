@@ -48,7 +48,8 @@ GENE_TEMPLATE(
     CREATURE_LEFT,
     CREATURE_RIGHT,
     CREATURE_UP,
-    CREATURE_DOWN)
+    CREATURE_DOWN,
+    CREATURE_MASS)
 GENE_TEMPLATE(output, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, MOVE_DOWN)
 GENE_TEMPLATE(internal, N0, N1, N2)
 
@@ -95,9 +96,26 @@ activation_sigmoid_approx(float value, float weight) {
 }
 #endif
 
-PRIV_FN int8_t gene_sense(uint8_t gene, grid_state_t state) {
+// PRIV_FN int8_t gene_sense(uint8_t gene, grid_state_t state) {
+// #define SENSE_CASE(name)                                                       \
+//     case GENE_##name: return (state & S_##name) ? INT8_MAX : INT8_MIN
+//     switch(gene) {
+//         SENSE_CASE(WALL_LEFT);
+//         SENSE_CASE(WALL_RIGHT);
+//         SENSE_CASE(WALL_UP);
+//         SENSE_CASE(WALL_DOWN);
+//         SENSE_CASE(CREATURE_LEFT);
+//         SENSE_CASE(CREATURE_RIGHT);
+//         SENSE_CASE(CREATURE_UP);
+//         SENSE_CASE(CREATURE_DOWN);
+//         default: return 0;
+//     }
+// #undef SENSE_CASE
+// }
+#include <immintrin.h>
+PRIV_FN float gene_sensef(uint8_t gene, grid_state_t state) {
 #define SENSE_CASE(name)                                                       \
-    case GENE_##name: return (state & S_##name) ? INT8_MAX : INT8_MIN
+    case GENE_##name: return (state & S_##name) ? -1.0 : 1.0
     switch(gene) {
         SENSE_CASE(WALL_LEFT);
         SENSE_CASE(WALL_RIGHT);
@@ -107,6 +125,7 @@ PRIV_FN int8_t gene_sense(uint8_t gene, grid_state_t state) {
         SENSE_CASE(CREATURE_RIGHT);
         SENSE_CASE(CREATURE_UP);
         SENSE_CASE(CREATURE_DOWN);
+        case GENE_CREATURE_MASS: return scale_b2f(_mm_popcnt_u32(state & S_CREATURE_LEFT & S_CREATURE_RIGHT & S_CREATURE_UP & S_CREATURE_DOWN), 0, 4, -1.0, 1.0);
         default: return 0;
     }
 #undef SENSE_CASE
@@ -121,38 +140,39 @@ PRIV_FN int8_t gene_action(uint8_t gene) {
     }
 }
 
-PRIV_FN int8_t gene_express(genome_t* genome, size_t idx, grid_state_t state) {
+PRIV_FN float gene_expressf(genome_t* genome, size_t idx, grid_state_t state) {
     // express 1 gene, follow connection chain
     // given current idx to a connection, find everyone who sinks to the source
     // recursively call, sum and apply activation
 
     float inputs = 0;
-    // int16_t inputs = 0;
     connection_t gene_connection = genome->connections[idx];
-    // uint8_t gene = genome_connection_sink(gene_connection);
     uint8_t source = genome_connection_source(gene_connection);
     int16_t weight = genome_connection_weight(gene_connection);
 
     if(genome_connection_source_is_input(gene_connection)) {
-        int8_t expressed = gene_sense(source, state);
-        inputs = scale_b2f(expressed, INT8_MIN, INT8_MAX, -1.0, 1.0);
+        float expressed = gene_sensef(source, state);
+        inputs = expressed;
     } else if(!genome_connection_sink_is_output(gene_connection)) {
         for(size_t i = 0; i < genome->n_connections; i++) {
             if(i == idx) continue;
             // if a connection sinks to the source, we need to calculate it
             if(genome_connection_sink(genome->connections[i]) == source) {
-                int8_t expressed = gene_express(genome, i, state);
-                // inputs += expressed;
-                inputs += scale_b2f(expressed, INT8_MIN, INT8_MAX, -1.0, 1.0);
+                float expressed = gene_expressf(genome, i, state);
+                inputs += expressed;
             }
         }
     }
 
     float weight_f = scale_w2f(weight, INT16_MIN, INT16_MAX, -4.0, 4.0);
-    // float activated = activation_sigmoid(inputs, weight_f);
     float activated = activation_sigmoid_approx(inputs, weight_f);
-    int8_t scaled = scale_f2b(activated * 128, -1.0, 1.0, INT8_MIN, INT8_MAX);
+    return activated;
+}
 
+PRIV_FN __attribute__((always_inline)) int8_t
+gene_express(genome_t* genome, size_t idx, grid_state_t state) {
+    float expressed = gene_expressf(genome, idx, state);
+    int8_t scaled = scale_f2b(expressed * 128, -1.0, 1.0, INT8_MIN, INT8_MAX);
     return scaled;
 }
 
