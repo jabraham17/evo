@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-#define UNUSED __attribute((unused))
+#define UNUSED __attribute__((unused))
 
 int main(UNUSED int argc, UNUSED char** argv) {
     long seed = time(0);

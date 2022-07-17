@@ -15,7 +15,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define UNUSED __attribute((unused))
+#define UNUSED __attribute__((unused))
 
 #define BUFFER_MAX 512
 static char buffer[BUFFER_MAX];
