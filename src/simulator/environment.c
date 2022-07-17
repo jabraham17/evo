@@ -222,7 +222,7 @@ void environment_microtick(struct environment* env) {
     args[0].env = env;
     args[0].workqueue = ts_queue_create();
     args[1].start = args[0].stop;
-    args[1].stop =grid_size;
+    args[1].stop = grid_size;
     args[1].env = env;
     args[1].workqueue = ts_queue_create();
     // args[2].start = args[1].stop;
@@ -234,35 +234,42 @@ void environment_microtick(struct environment* env) {
     // args[3].env = env;
     // args[3].workqueue = ts_queue_create();
 
-    struct ptp_task* t0 =
-        pool_submit(env->thread_pool, environment_microtick_thread, &args[0], NULL);
-    struct ptp_task* t1 =
-        pool_submit(env->thread_pool, environment_microtick_thread, &args[1], NULL);
+    struct ptp_task* t0 = pool_submit(
+        env->thread_pool,
+        environment_microtick_thread,
+        &args[0],
+        NULL);
+    struct ptp_task* t1 = pool_submit(
+        env->thread_pool,
+        environment_microtick_thread,
+        &args[1],
+        NULL);
     // struct ptp_task* t2 =
-    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[2], NULL);
+    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[2],
+    //     NULL);
     // struct ptp_task* t3 =
-    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[3], NULL);
+    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[3],
+    //     NULL);
 
-        #define empty_it(idx) \
-    while(!ts_queue_empty(args[idx].workqueue)) { \
-        struct creature_workqueue_elm* elm = \
-            ts_queue_dequeue(args[idx].workqueue); \
-        creature_apply_action( \
-            elm->creature, \
-            elm->env, \
-            elm->grid_idx, \
-            elm->action); \
-        free(elm); \
-    } \
-    ts_queue_destroy(args[idx].workqueue);
+    #define empty_it(idx)                                                      \
+        while(!ts_queue_empty(args[idx].workqueue)) {                          \
+            struct creature_workqueue_elm* elm =                               \
+                ts_queue_dequeue(args[idx].workqueue);                         \
+            creature_apply_action(                                             \
+                elm->creature,                                                 \
+                elm->env,                                                      \
+                elm->grid_idx,                                                 \
+                elm->action);                                                  \
+            free(elm);                                                         \
+        }                                                                      \
+        ts_queue_destroy(args[idx].workqueue);
 
     pool_wait(t0);
     pool_wait(t1);
     // pool_wait(t2);
     // pool_wait(t3);
 
-    empty_it(0)
-    empty_it(1)
+    empty_it(0) empty_it(1)
     // empty_it(2)
     // empty_it(3)
 }

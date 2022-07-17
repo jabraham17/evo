@@ -60,17 +60,23 @@ GENE_TEMPLATE(internal, N0, N1, N2)
 #define PRIV_FN __attribute__((unused)) static
 
 // modified sigmoid, scales between -1 and 1
-PRIV_FN __attribute__((always_inline)) float activation_sigmoid(float value, float weight) {
+PRIV_FN __attribute__((always_inline)) float
+activation_sigmoid(float value, float weight) {
     return (2.0f / (1.0f + (float)exp(-1.0f * value * weight))) - 1.0f;
 }
 
-
 #ifdef __x86_64__
-#include <immintrin.h>
-PRIV_FN __attribute__((always_inline)) float activation_sigmoid_approx(float value, float weight) {
-    return clampf(value*weight*_mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(1.0f+value*value))),  -1.0f, 1.0f);
+    #include <immintrin.h>
+PRIV_FN __attribute__((always_inline)) float
+activation_sigmoid_approx(float value, float weight) {
+    return clampf(
+        value * weight *
+            _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(1.0f + value * value))),
+        -1.0f,
+        1.0f);
 }
-// PRIV_FN __attribute__((always_inline)) int32_t activation_sigmoid_approx3(int32_t value, int32_t weight) {
+// PRIV_FN __attribute__((always_inline)) int32_t
+// activation_sigmoid_approx3(int32_t value, int32_t weight) {
 //     __m128 value_f = _mm_cvt_si2ss(_mm_set_ps1(0), value);
 //     __m128 weight_f = _mm_cvt_si2ss(_mm_set_ps1(0), weight);
 //     __m128 value_weight = _mm_mul_ss(value_f, weight_f);
@@ -80,12 +86,14 @@ PRIV_FN __attribute__((always_inline)) float activation_sigmoid_approx(float val
 //     return _mm_cvt_ss2si(result);
 // }
 #else
-PRIV_FN __attribute__((always_inline)) float activation_sigmoid_approx(float value, float weight) {
-    return clampf((value * weight)*(1/sqrt(1+value*value)), -1.0f, 1.0f);
+PRIV_FN __attribute__((always_inline)) float
+activation_sigmoid_approx(float value, float weight) {
+    return clampf(
+        (value * weight) * (1 / sqrt(1 + value * value)),
+        -1.0f,
+        1.0f);
 }
 #endif
-
-
 
 PRIV_FN int8_t gene_sense(uint8_t gene, grid_state_t state) {
 #define SENSE_CASE(name)                                                       \
