@@ -95,15 +95,19 @@ ts_queue_length_impl(struct ts_queue* queue) {
     return queue->length;
 }
 
+// #define ENSURE_SEQUENTIAL_ONERROR(lock_, code_, onerror_)                      \
+//     do {                                                                       \
+//         if(pthread_mutex_lock(lock_) != 0) {                                   \
+//             onerror_;                                                          \
+//         }                                                                      \
+//         code_;                                                                 \
+//         if(pthread_mutex_unlock(lock_) != 0) {                                 \
+//             onerror_;                                                          \
+//         }                                                                      \
+//     } while(0)
 #define ENSURE_SEQUENTIAL_ONERROR(lock_, code_, onerror_)                      \
     do {                                                                       \
-        if(pthread_mutex_lock(lock_) != 0) {                                   \
-            onerror_;                                                          \
-        }                                                                      \
         code_;                                                                 \
-        if(pthread_mutex_unlock(lock_) != 0) {                                 \
-            onerror_;                                                          \
-        }                                                                      \
     } while(0)
 #define C_NOP                                                                  \
     do {                                                                       \
