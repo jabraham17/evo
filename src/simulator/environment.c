@@ -215,33 +215,33 @@ static void* environment_microtick_thread(void* varg) {
 }
 void environment_microtick(struct environment* env) {
     size_t grid_size = env->width * env->height;
-    size_t step = grid_size / 4;
-    struct environment_microtick_thread_arg args[4];
+    size_t step = grid_size / 2;
+    struct environment_microtick_thread_arg args[2];
     args[0].start = 0;
     args[0].stop = step;
     args[0].env = env;
     args[0].workqueue = ts_queue_create();
     args[1].start = args[0].stop;
-    args[1].stop = args[0].stop + step;
+    args[1].stop =grid_size;
     args[1].env = env;
     args[1].workqueue = ts_queue_create();
-    args[2].start = args[1].stop;
-    args[2].stop = args[1].stop + step;
-    args[2].env = env;
-    args[2].workqueue = ts_queue_create();
-    args[3].start = args[2].stop;
-    args[3].stop = grid_size;
-    args[3].env = env;
-    args[3].workqueue = ts_queue_create();
+    // args[2].start = args[1].stop;
+    // args[2].stop = args[1].stop + step;
+    // args[2].env = env;
+    // args[2].workqueue = ts_queue_create();
+    // args[3].start = args[2].stop;
+    // args[3].stop = grid_size;
+    // args[3].env = env;
+    // args[3].workqueue = ts_queue_create();
 
     struct ptp_task* t0 =
         pool_submit(env->thread_pool, environment_microtick_thread, &args[0], NULL);
     struct ptp_task* t1 =
         pool_submit(env->thread_pool, environment_microtick_thread, &args[1], NULL);
-    struct ptp_task* t2 =
-        pool_submit(env->thread_pool, environment_microtick_thread, &args[2], NULL);
-    struct ptp_task* t3 =
-        pool_submit(env->thread_pool, environment_microtick_thread, &args[3], NULL);
+    // struct ptp_task* t2 =
+    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[2], NULL);
+    // struct ptp_task* t3 =
+    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[3], NULL);
 
         #define empty_it(idx) \
     while(!ts_queue_empty(args[idx].workqueue)) { \
@@ -258,13 +258,13 @@ void environment_microtick(struct environment* env) {
 
     pool_wait(t0);
     pool_wait(t1);
-    pool_wait(t2);
-    pool_wait(t3);
+    // pool_wait(t2);
+    // pool_wait(t3);
 
     empty_it(0)
     empty_it(1)
-    empty_it(2)
-    empty_it(3)
+    // empty_it(2)
+    // empty_it(3)
 }
 #else
 void environment_microtick(struct environment* env) {
