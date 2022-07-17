@@ -1,6 +1,6 @@
 #include "pool.h"
 
-#include "queue.h"
+#include "_queue.h"
 #include <pthread.h>
 #include <stdlib.h>
 
@@ -195,8 +195,6 @@ struct ptp_task* pool_submit(
 
     return task;
 }
-
-unsigned long pool_get_num_threads(struct ptp_pool* pool) {}
 
 // wait for a specific work to complete
 void pool_wait(struct ptp_task* task) {

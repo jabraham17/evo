@@ -2,6 +2,8 @@
 #ifndef PTHREADPOOL_QUEUE_H_
 #define PTHREADPOOL_QUEUE_H_
 
+// THIS IS INTERNAL FOR POOL ONLY, SHOULD NOT BE EXPOSED
+
 // the heads prev is the most recently added element and the last to come out
 // the heads next is the next element
 // implemented with a dummy node, the head node is has no payload

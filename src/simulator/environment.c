@@ -1,6 +1,7 @@
 
 #include "environment.h"
 #include "common/common.h"
+#include "tsqueue/tsqueue.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -193,8 +194,82 @@ void environment_next_generation(struct environment* env) {
     environment_distribute(env);
 }
 
+#if defined(THREADED) && THREADED == 1
+struct environment_microtick_thread_arg {
+    size_t start;
+    size_t stop;
+    struct environment* env;
+    struct ts_queue* workqueue;
+};
+static void* environment_microtick_thread(void* varg) {
+    struct environment_microtick_thread_arg* arg =
+        (struct environment_microtick_thread_arg*)varg;
+    for(size_t grid_idx = arg->start; grid_idx < arg->stop; grid_idx++) {
+        struct creature* creature = arg->env->grid[grid_idx];
+        if(creature) {
+            grid_state_t state = environment_get_grid_state(arg->env, grid_idx);
+            creature_tick(creature, arg->env, grid_idx, state, arg->workqueue);
+        }
+    }
+    return NULL;
+}
 void environment_microtick(struct environment* env) {
-    for(size_t grid_idx = 0; grid_idx < env->width * env->height; grid_idx++) {
+    size_t grid_size = env->width * env->height;
+    size_t step = grid_size / 4;
+    struct environment_microtick_thread_arg args[4];
+    args[0].start = 0;
+    args[0].stop = step;
+    args[0].env = env;
+    args[0].workqueue = ts_queue_create();
+    args[1].start = args[0].stop;
+    args[1].stop = args[0].stop + step;
+    args[1].env = env;
+    args[1].workqueue = ts_queue_create();
+    args[2].start = args[1].stop;
+    args[2].stop = args[1].stop + step;
+    args[2].env = env;
+    args[2].workqueue = ts_queue_create();
+    args[3].start = args[2].stop;
+    args[3].stop = grid_size;
+    args[3].env = env;
+    args[3].workqueue = ts_queue_create();
+
+    struct ptp_task* t0 =
+        pool_submit(env->thread_pool, environment_microtick_thread, &args[0], NULL);
+    struct ptp_task* t1 =
+        pool_submit(env->thread_pool, environment_microtick_thread, &args[1], NULL);
+    struct ptp_task* t2 =
+        pool_submit(env->thread_pool, environment_microtick_thread, &args[2], NULL);
+    struct ptp_task* t3 =
+        pool_submit(env->thread_pool, environment_microtick_thread, &args[3], NULL);
+
+        #define empty_it(idx) \
+    while(!ts_queue_empty(args[idx].workqueue)) { \
+        struct creature_workqueue_elm* elm = \
+            ts_queue_dequeue(args[idx].workqueue); \
+        creature_apply_action( \
+            elm->creature, \
+            elm->env, \
+            elm->grid_idx, \
+            elm->action); \
+        free(elm); \
+    } \
+    ts_queue_destroy(args[idx].workqueue);
+
+    pool_wait(t0);
+    pool_wait(t1);
+    pool_wait(t2);
+    pool_wait(t3);
+
+    empty_it(0)
+    empty_it(1)
+    empty_it(2)
+    empty_it(3)
+}
+#else
+void environment_microtick(struct environment* env) {
+    size_t grid_size = env->width * env->height;
+    for(size_t grid_idx = 0; grid_idx < grid_size; grid_idx++) {
         struct creature* creature = env->grid[grid_idx];
         if(creature) {
             grid_state_t state = environment_get_grid_state(env, grid_idx);
@@ -202,6 +277,7 @@ void environment_microtick(struct environment* env) {
         }
     }
 }
+#endif
 
 void environment_select(
     struct environment* env,

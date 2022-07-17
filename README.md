@@ -84,6 +84,7 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 - Commandline args
   - selection criteria
   - species
+  - add checking if varaibales go out of bounds, like exceeding max generations
 - Expand what species do
 - add more genes
 - add more complex environments
@@ -113,4 +114,3 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 - improve build system cross compaitabily and workiung out of the box
     fix libraru includes, things are included where they shouldnt due to overrides of LDLIBS
 - wasm
-- add better error handling to cli args, if i misspell one it should error

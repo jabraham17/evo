@@ -39,6 +39,7 @@ cppcheck: $(C_SOURCES)
 # 	$(AT)$(RM) $(TARGET) $(DEPENDS) $(OBJECTS)
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.c Makefile
+	$(AT)mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -MMD -MP -MF $(patsubst $(SRC_PATH)%.c,$(OBJ_PATH)%.d,$<) $(INCLUDE) -c $< -o $@
 
 # $(OBJ_PATH)%.E: $(SRC_PATH)%.c Makefile
@@ -46,6 +47,7 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.c Makefile
 # 	$(CC) $(CFLAGS) -E -MMD -MP -MF $(patsubst $(SRC_PATH)%.c,$(OBJ_PATH)%.d,$<) $(INCLUDE) -c $< -o $@
 
 $(OBJ_PATH)%_a.o: $(SRC_PATH)%.asm Makefile
+	$(AT)mkdir -p $(dir $@)
 	$(AS) -felf $(CONSTANTS) $< -o $@ -MD $(patsubst $(SRC_PATH)%.asm,$(OBJ_PATH)%.d,$<)
 
 
@@ -54,10 +56,12 @@ _make_generated_c_source = $(patsubst $(SRC_PATH)%,$(OBJ_PATH)%.c,$1)
 # using $(CFLAGS) causes errors, my guess is DXOPEN=700
 
 $(OBJ_PATH)%.l.o: $(SRC_PATH)%.l $(OBJ_PATH)%.yy.o Makefile
+	$(AT)mkdir -p $(dir $@)
 	$(LEX) $(LFLAGS) -o $(call _make_generated_c_source,$<) $<
 	$(CC)  -c -x c $(call _make_generated_c_source,$<) -x none -o $@ $(INCLUDE) -I$(SRC_PATH) -I$(OBJ_PATH)
 
 $(OBJ_PATH)%.yy.o: $(SRC_PATH)%.yy Makefile
+	$(AT)mkdir -p $(dir $@)
 	$(YACC) $(YFLAGS) -o $(call _make_generated_c_source,$<) $< -d
 	$(CC)  -c -x c $(call _make_generated_c_source,$<) -x none -o $@ $(INCLUDE) -I$(SRC_PATH)
 

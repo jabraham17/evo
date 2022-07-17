@@ -16,16 +16,50 @@ void creature_init(
     memset(creature->padding, 0, CREATURE_PADDING_SIZE);
 }
 
+__attribute__((always_inline)) static creature_action_t get_action(
+    struct creature* creature,
+    struct environment* env,
+    grid_state_t grid_state) {
+    creature_action_t action =
+        genome_express(&creature->genome, grid_state, env->args->threshold);
+    return action;
+}
+
+#if defined(THREADED) && THREADED == 1
+__attribute__((always_inline)) static struct creature_workqueue_elm*
+wrap_action(
+    struct creature* creature,
+    struct environment* env,
+    size_t grid_idx,
+    creature_action_t action) {
+    struct creature_workqueue_elm* elm = malloc(sizeof(*elm));
+    elm->creature = creature;
+    elm->env = env;
+    elm->grid_idx = grid_idx;
+    elm->action = action;
+    return elm;
+}
+void creature_tick(
+    struct creature* creature,
+    struct environment* env,
+    size_t grid_idx,
+    grid_state_t grid_state,
+    struct ts_queue* workqueue) {
+    creature_action_t action = get_action(creature, env, grid_state);
+    ts_queue_enqueue(
+        workqueue,
+        (void*)wrap_action(creature, env, grid_idx, action));
+}
+#else
 void creature_tick(
     struct creature* creature,
     struct environment* env,
     size_t grid_idx,
     grid_state_t grid_state) {
-    if(!creature) return;
-    creature_action_t action =
-        genome_express(&creature->genome, grid_state, env->args->threshold);
+    creature_action_t action = get_action(creature, env, grid_state);
     creature_apply_action(creature, env, grid_idx, action);
 }
+#endif
 
 void creature_apply_action(
     __attribute__((unused)) struct creature* creature,

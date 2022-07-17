@@ -7,6 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(THREADED) && THREADED == 1
+    #include "tsqueue/tsqueue.h"
+#endif
+
 struct environment;
 typedef enum { SPECIES_A } creature_species_t;
 
@@ -25,11 +29,26 @@ _Static_assert(sizeof(struct creature) == CREATURE_SIZE, "");
 
 void creature_init(struct creature*, creature_species_t, size_t n_genes);
 
+#if defined(THREADED) && THREADED == 1
+struct creature_workqueue_elm {
+    struct creature* creature;
+    struct environment* env;
+    size_t grid_idx;
+    creature_action_t action;
+};
+void creature_tick(
+    struct creature*,
+    struct environment*,
+    size_t grid_idx,
+    grid_state_t,
+    struct ts_queue* workqueue);
+#else
 void creature_tick(
     struct creature*,
     struct environment*,
     size_t grid_idx,
     grid_state_t);
+#endif
 void creature_apply_action(
     struct creature*,
     struct environment*,

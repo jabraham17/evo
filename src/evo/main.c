@@ -116,12 +116,12 @@ int main(UNUSED int argc, UNUSED const char** argv) {
     //    char* argDescrip;
     //  };
 
-
     // design for arg parser
 
-    // bitmasks: POPT_ARG_NONE, POPT_ARG_BOOL, POPT_ARG_BOOL_NEGATABLE, POPT_ARG_STRING, POPT_ARG_INT, POPT_ARG_FLOAT, POPT_ARGFLAG_SHOW_DEFAULT, POPT_ARGFLAG_CUSTOM, POPT_ARG_CHECK
-    // POPT_ARGFLAG_OR, POPT_ARGFLAG_AND, or POPT_ARGFLAG_XOR, POPT_ARGFLAG_NOT
-    // POPT_ARGFLAG_ONEDASH
+    // bitmasks: POPT_ARG_NONE, POPT_ARG_BOOL, POPT_ARG_BOOL_NEGATABLE,
+    // POPT_ARG_STRING, POPT_ARG_INT, POPT_ARG_FLOAT, POPT_ARGFLAG_SHOW_DEFAULT,
+    // POPT_ARGFLAG_CUSTOM, POPT_ARG_CHECK POPT_ARGFLAG_OR, POPT_ARGFLAG_AND, or
+    // POPT_ARGFLAG_XOR, POPT_ARGFLAG_NOT POPT_ARGFLAG_ONEDASH
 
     //  struct myopt {
     //    const char* longName; // if NULL, none
@@ -129,8 +129,9 @@ int main(UNUSED int argc, UNUSED const char** argv) {
     //    int argInfo; // bitmask
     //    void* argVar; // set according to bitmask
     // if bitmask has 'custom', argVar is not set but set in a custom handler
-    // if bitmask has 'check', this func is called after argVar is set to provide custom handling
-    //    void* argFunc; // (void* argVar) -> int 
+    // if bitmask has 'check', this func is called after argVar is set to
+    // provide custom handling
+    //    void* argFunc; // (void* argVar) -> int
     //    int val; // value to return, can be used to invert booleans
     //    char* descrip;
     //    char* argDescrip;
