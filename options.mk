@@ -66,7 +66,7 @@ override CFLAGS+= -Wall -Wextra
 override CFLAGS+= -masm=intel
 override CFLAGS+= -std=c11
 override CFLAGS+= -D_XOPEN_SOURCE=700
-override CFLAGS+= -ffast-math
+override CFLAGS+= -ffast-math -mpopcnt
 override ASFLAGS+=
 override LDFLAGS+=
 override LDFLAGS_FINAL+=
@@ -88,5 +88,6 @@ endif
 
 THREADED=0
 ifeq ($(THREADED),1)
-override CFLAGS+= -DTHREADED=1
+override CFLAGS+= -DTHREADED=1 -fopenmp
+override LDLIBS+= -lomp
 endif

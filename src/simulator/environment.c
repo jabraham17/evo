@@ -5,7 +5,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <omp.h>
+#if defined(THREADED) && THREADED == 1
+    #include <omp.h>
+#endif
 
 // private
 #define PRIV_FN __attribute__((unused)) static
@@ -59,6 +61,10 @@ struct environment* environment_create(struct environment_args* args) {
     env->n_creatures = 0;
     env->grid = calloc(env->width * env->height, sizeof(*env->grid));
     env->args = args;
+
+#if defined(THREADED) && THREADED == 1
+    omp_set_num_threads(env->args->n_threads);
+#endif
 
     environment_add_creatures(env, args->n_creatures);
     for(size_t i = 0; i < env->n_creatures; i++) {
@@ -204,8 +210,10 @@ void environment_next_generation(struct environment* env) {
 
 void environment_microtick(struct environment* env) {
     size_t grid_size = env->width * env->height;
-    // omp_set_num_threads(2);
-    // #pragma omp parallel for
+
+#if defined(THREADED) && THREADED == 1
+    #pragma omp parallel for
+#endif
     for(size_t grid_idx = 0; grid_idx < grid_size; grid_idx++) {
         struct creature* creature = env->grid[grid_idx];
         if(creature) {
@@ -325,7 +333,9 @@ bool environment_move_creature(
     if(creature_is_dead(env->grid[grid_idx_src])) return false;
     if(creature_is_alive(env->grid[grid_idx_dst])) return false;
 
-    // #pragma omp critical
+#if defined(THREADED) && THREADED == 1
+    #pragma omp critical
+#endif
     {
         env->grid[grid_idx_dst] = env->grid[grid_idx_src];
         // src is no longer valid

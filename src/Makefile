@@ -2,9 +2,9 @@
 
 TOPTARGETS=all clean cppcheck
 SUBDIRS= simulator common img viz dot evo dumpbrain zpipe
-ifeq ($(THREADED),1)
-SUBDIRS+= pthreadpool
-endif
+# ifeq ($(THREADED),1)
+# SUBDIRS+= pthreadpool
+# endif
 
 .PHONY: $(TOPTARGETS)
 $(TOPTARGETS): $(SUBDIRS)
