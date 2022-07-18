@@ -230,6 +230,13 @@ int main(UNUSED int argc, UNUSED const char** argv) {
          0,
          "rate at which mutations occur [0.0, 1.0]",
          "RATE"},
+        {"selection",
+         '\0',
+         POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT,
+         &env_args.selection_criteria,
+         0,
+         "criteria to select which creatures survive to reproduce",
+         "SELECTION"},
 #if defined(THREADED) && THREADED == 1
         {"threads",
          0,

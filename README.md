@@ -82,7 +82,6 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 ## TODO
 
 - Commandline args
-  - selection criteria
   - species
   - add checking if varaibales go out of bounds, like exceeding max generations
 - Expand what species do
@@ -92,8 +91,6 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
   - load from a file description?
 - write a better expression algorithm that doesn't use recursion, look into using actual matrices
 - threading
-  - dynamically allocate threads instead of statically
-  - improve memory allocation in threads, i think thats part of what slows down threading
   - we can make better threading with more complex threading, where we tile the grid, and then only synchronize on tile crossing, this will be after other optimizations because it will be a pain
 - make a primitive language to describe simulations
   - language describes the environment, and how the simulation should run
@@ -110,18 +107,14 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
   - maybe look at exporting as ppm?
     - https://stackoverflow.com/questions/32024859/piping-ppm-files-to-ffmpeg-to-create-movie-in-c
 - make a formal movie script that adds parameters to the video?
-- fix makefile dependencies
 - https://shotstack.io/learn/use-ffmpeg-to-convert-images-to-video/
 - look into getting rid of libraries
   - get rid of popt, make ur own arg parser from scratch :)
   - get rid of zlib, write ur own custom compression scheme
     - write bmp rle compression. rudimentary but probably sufficent
     - either use RLE8 with a color table and indexing, or use 24 bit RLE
-- improve build system cross compaitabily and workiung out of the box
-    fix libraru includes, things are included where they shouldnt due to overrides of LDLIBS
+- improve build system cross compatibly and working out of the box
+    fix library includes, things are included where they shouldn't due to overrides of LDLIBS
 - wasm
 - video encode
-- https://www.ffmpeg.org/doxygen/3.3/encode_video_8c-example.html
-
-
-make -B BUILD=omp_build VERBOSE=1 CFLAGS="-fopenmp -mpopcnt" LDLIBS="-lomp"
+  - https://www.ffmpeg.org/doxygen/3.3/encode_video_8c-example.html
