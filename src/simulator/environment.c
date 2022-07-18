@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+// #include <omp.h>
 
 // private
 #define PRIV_FN __attribute__((unused)) static
@@ -204,7 +205,9 @@ struct environment_microtick_thread_arg {
     size_t start;
     size_t stop;
     struct environment* env;
-    struct ts_queue* workqueue;
+    creature_action_t* actions;
+    grid_state_t* grid_states;
+    // struct ts_queue* workqueue;
 };
 static void* environment_microtick_thread(void* varg) {
     struct environment_microtick_thread_arg* arg =
@@ -213,31 +216,42 @@ static void* environment_microtick_thread(void* varg) {
         struct creature* creature = arg->env->grid[grid_idx];
         if(creature) {
             grid_state_t state = environment_get_grid_state(arg->env, grid_idx);
-            creature_tick(creature, arg->env, grid_idx, state, arg->workqueue);
+            arg->grid_states[grid_idx - arg->start] = state;
+            creature_tick(
+                creature,
+                arg->env,
+                grid_idx,
+                state,
+                arg->actions,
+                grid_idx - arg->start);
         }
     }
     return NULL;
 }
 void environment_microtick(struct environment* env) {
     size_t grid_size = env->width * env->height;
-    size_t step = grid_size / 2;
-    struct environment_microtick_thread_arg args[2];
+    size_t step = grid_size / 4;
+    struct environment_microtick_thread_arg args[4];
     args[0].start = 0;
     args[0].stop = step;
     args[0].env = env;
-    args[0].workqueue = ts_queue_create();
+    args[0].actions = malloc(sizeof(creature_action_t) * step);
+    args[0].grid_states = malloc(sizeof(grid_state_t) * step);
     args[1].start = args[0].stop;
-    args[1].stop = grid_size;
+    args[1].stop = args[0].stop + step;
     args[1].env = env;
-    args[1].workqueue = ts_queue_create();
-    // args[2].start = args[1].stop;
-    // args[2].stop = args[1].stop + step;
-    // args[2].env = env;
-    // args[2].workqueue = ts_queue_create();
-    // args[3].start = args[2].stop;
-    // args[3].stop = grid_size;
-    // args[3].env = env;
-    // args[3].workqueue = ts_queue_create();
+    args[1].actions = malloc(sizeof(creature_action_t) * step);
+    args[1].grid_states = malloc(sizeof(grid_state_t) * step);
+    args[2].start = args[1].stop;
+    args[2].stop = args[1].stop + step;
+    args[2].env = env;
+    args[2].actions = malloc(sizeof(creature_action_t) * step);
+    args[2].grid_states = malloc(sizeof(grid_state_t) * step);
+    args[3].start = args[2].stop;
+    args[3].stop = grid_size;
+    args[3].env = env;
+    args[3].actions = malloc(sizeof(creature_action_t) * step);
+    args[3].grid_states = malloc(sizeof(grid_state_t) * step);
 
     struct ptp_task* t0 = pool_submit(
         env->thread_pool,
@@ -249,38 +263,41 @@ void environment_microtick(struct environment* env) {
         environment_microtick_thread,
         &args[1],
         NULL);
-    // struct ptp_task* t2 =
-    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[2],
-    //     NULL);
-    // struct ptp_task* t3 =
-    //     pool_submit(env->thread_pool, environment_microtick_thread, &args[3],
-    //     NULL);
+    struct ptp_task* t2 = pool_submit(
+        env->thread_pool,
+        environment_microtick_thread,
+        &args[2],
+        NULL);
+    struct ptp_task* t3 = pool_submit(
+        env->thread_pool,
+        environment_microtick_thread,
+        &args[3],
+        NULL);
 
     #define empty_it(idx)                                                      \
-        while(!ts_queue_empty(args[idx].workqueue)) {                          \
-            struct creature_workqueue_elm* elm =                               \
-                ts_queue_dequeue(args[idx].workqueue);                         \
+        for(size_t i = 0; i < step; i++) {                                     \
+            size_t grid_idx = args[idx].start + i;                             \
             creature_apply_action(                                             \
-                elm->creature,                                                 \
-                elm->env,                                                      \
-                elm->grid_idx,                                                 \
-                elm->action);                                                  \
-            free(elm);                                                         \
+                env->grid[grid_idx],                                           \
+                env,                                                           \
+                args[idx].grid_states[i],                                      \
+                args[idx].actions[i]);                                         \
         }                                                                      \
-        ts_queue_destroy(args[idx].workqueue);
+        free(args[idx].actions);                                               \
+        free(args[idx].grid_states);
 
     pool_wait(t0);
     pool_wait(t1);
-    // pool_wait(t2);
-    // pool_wait(t3);
+    pool_wait(t2);
+    pool_wait(t3);
 
-    empty_it(0) empty_it(1)
-    // empty_it(2)
-    // empty_it(3)
+    empty_it(0) empty_it(1) empty_it(2) empty_it(3)
 }
 #else
 void environment_microtick(struct environment* env) {
     size_t grid_size = env->width * env->height;
+    // omp_set_num_threads(2);
+    // #pragma omp parallel for
     for(size_t grid_idx = 0; grid_idx < grid_size; grid_idx++) {
         struct creature* creature = env->grid[grid_idx];
         if(creature) {
@@ -348,9 +365,12 @@ bool environment_move_creature(
     if(creature_is_dead(env->grid[grid_idx_src])) return false;
     if(creature_is_alive(env->grid[grid_idx_dst])) return false;
 
+    // #pragma omp critical 
+    {
     env->grid[grid_idx_dst] = env->grid[grid_idx_src];
     // src is no longer valid
     env->grid[grid_idx_src] = NULL;
+    }
 
     return true;
 }

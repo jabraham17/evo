@@ -44,11 +44,13 @@ void creature_tick(
     struct environment* env,
     size_t grid_idx,
     grid_state_t grid_state,
-    struct ts_queue* workqueue) {
+    creature_action_t* actions,
+    size_t action_idx) {
     creature_action_t action = get_action(creature, env, grid_state);
-    ts_queue_enqueue(
-        workqueue,
-        (void*)wrap_action(creature, env, grid_idx, action));
+    actions[action_idx] = action;
+    // ts_queue_enqueue(
+    //     workqueue,
+    //     (void*)wrap_action(creature, env, grid_idx, action));
 }
 #else
 creature_action_t creature_tick(
