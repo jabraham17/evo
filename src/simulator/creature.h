@@ -29,31 +29,8 @@ _Static_assert(sizeof(struct creature) == CREATURE_SIZE, "");
 
 void creature_init(struct creature*, creature_species_t, size_t n_genes);
 
-#if defined(THREADED) && THREADED == 1
-struct creature_workqueue_elm {
-    struct creature* creature;
-    struct environment* env;
-    size_t grid_idx;
-    creature_action_t action;
-};
-void creature_tick(
-    struct creature*,
-    struct environment*,
-    size_t grid_idx,
-    grid_state_t,
-    creature_action_t*, size_t);
-#else
-creature_action_t creature_tick(
-    struct creature*,
-    struct environment*,
-    size_t grid_idx,
-    grid_state_t);
-#endif
-void creature_apply_action(
-    struct creature*,
-    struct environment*,
-    size_t grid_idx,
-    creature_action_t);
+creature_action_t
+creature_tick(struct creature*, struct environment*, grid_state_t);
 
 void creature_mutate(struct creature*, float chance);
 

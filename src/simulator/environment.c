@@ -24,9 +24,15 @@ PRIV_FN bool creature_has_survived(
     switch(selection_criteria) {
         case SELECTION_LEFT: return location.x < (env->width / 2);
         case SELECTION_RIGHT: return location.x > (env->width / 2);
-        case SELECTION_CENTER: return location.x > (env->width / 3) && location.x < (2 * env->width / 3);
-        case SELECTION_BR_CORNER: return location.x > (2 * env->width / 4) && location.y > (2 * env->height / 4);
-        case SELECTION_LONELY: return (gs & S_CREATURE_LEFT) || (gs & S_CREATURE_RIGHT) || (gs & S_CREATURE_UP) || (gs & S_CREATURE_DOWN);
+        case SELECTION_CENTER:
+            return location.x > (env->width / 3) &&
+                   location.x < (2 * env->width / 3);
+        case SELECTION_BR_CORNER:
+            return location.x > (2 * env->width / 4) &&
+                   location.y > (2 * env->height / 4);
+        case SELECTION_LONELY:
+            return (gs & S_CREATURE_LEFT) || (gs & S_CREATURE_RIGHT) ||
+                   (gs & S_CREATURE_UP) || (gs & S_CREATURE_DOWN);
         default: return true;
     }
 }
@@ -53,10 +59,6 @@ struct environment* environment_create(struct environment_args* args) {
     env->n_creatures = 0;
     env->grid = calloc(env->width * env->height, sizeof(*env->grid));
     env->args = args;
-
-#if defined(THREADED) && THREADED == 1
-    env->thread_pool = pool_create(args->n_threads);
-#endif
 
     environment_add_creatures(env, args->n_creatures);
     for(size_t i = 0; i < env->n_creatures; i++) {
@@ -200,100 +202,6 @@ void environment_next_generation(struct environment* env) {
     environment_distribute(env);
 }
 
-#if defined(THREADED) && THREADED == 1
-struct environment_microtick_thread_arg {
-    size_t start;
-    size_t stop;
-    struct environment* env;
-    creature_action_t* actions;
-    grid_state_t* grid_states;
-    // struct ts_queue* workqueue;
-};
-static void* environment_microtick_thread(void* varg) {
-    struct environment_microtick_thread_arg* arg =
-        (struct environment_microtick_thread_arg*)varg;
-    for(size_t grid_idx = arg->start; grid_idx < arg->stop; grid_idx++) {
-        struct creature* creature = arg->env->grid[grid_idx];
-        if(creature) {
-            grid_state_t state = environment_get_grid_state(arg->env, grid_idx);
-            arg->grid_states[grid_idx - arg->start] = state;
-            creature_tick(
-                creature,
-                arg->env,
-                grid_idx,
-                state,
-                arg->actions,
-                grid_idx - arg->start);
-        }
-    }
-    return NULL;
-}
-void environment_microtick(struct environment* env) {
-    size_t grid_size = env->width * env->height;
-    size_t step = grid_size / 4;
-    struct environment_microtick_thread_arg args[4];
-    args[0].start = 0;
-    args[0].stop = step;
-    args[0].env = env;
-    args[0].actions = malloc(sizeof(creature_action_t) * step);
-    args[0].grid_states = malloc(sizeof(grid_state_t) * step);
-    args[1].start = args[0].stop;
-    args[1].stop = args[0].stop + step;
-    args[1].env = env;
-    args[1].actions = malloc(sizeof(creature_action_t) * step);
-    args[1].grid_states = malloc(sizeof(grid_state_t) * step);
-    args[2].start = args[1].stop;
-    args[2].stop = args[1].stop + step;
-    args[2].env = env;
-    args[2].actions = malloc(sizeof(creature_action_t) * step);
-    args[2].grid_states = malloc(sizeof(grid_state_t) * step);
-    args[3].start = args[2].stop;
-    args[3].stop = grid_size;
-    args[3].env = env;
-    args[3].actions = malloc(sizeof(creature_action_t) * step);
-    args[3].grid_states = malloc(sizeof(grid_state_t) * step);
-
-    struct ptp_task* t0 = pool_submit(
-        env->thread_pool,
-        environment_microtick_thread,
-        &args[0],
-        NULL);
-    struct ptp_task* t1 = pool_submit(
-        env->thread_pool,
-        environment_microtick_thread,
-        &args[1],
-        NULL);
-    struct ptp_task* t2 = pool_submit(
-        env->thread_pool,
-        environment_microtick_thread,
-        &args[2],
-        NULL);
-    struct ptp_task* t3 = pool_submit(
-        env->thread_pool,
-        environment_microtick_thread,
-        &args[3],
-        NULL);
-
-    #define empty_it(idx)                                                      \
-        for(size_t i = 0; i < step; i++) {                                     \
-            size_t grid_idx = args[idx].start + i;                             \
-            creature_apply_action(                                             \
-                env->grid[grid_idx],                                           \
-                env,                                                           \
-                args[idx].grid_states[i],                                      \
-                args[idx].actions[i]);                                         \
-        }                                                                      \
-        free(args[idx].actions);                                               \
-        free(args[idx].grid_states);
-
-    pool_wait(t0);
-    pool_wait(t1);
-    pool_wait(t2);
-    pool_wait(t3);
-
-    empty_it(0) empty_it(1) empty_it(2) empty_it(3)
-}
-#else
 void environment_microtick(struct environment* env) {
     size_t grid_size = env->width * env->height;
     // omp_set_num_threads(2);
@@ -302,12 +210,64 @@ void environment_microtick(struct environment* env) {
         struct creature* creature = env->grid[grid_idx];
         if(creature) {
             grid_state_t state = environment_get_grid_state(env, grid_idx);
-            creature_action_t action = creature_tick(creature, env, grid_idx, state);
-            creature_apply_action(creature, env, grid_idx, action);
+            creature_action_t action = creature_tick(creature, env, state);
+            environment_apply_action(env, grid_idx, action);
         }
     }
 }
-#endif
+
+void environment_apply_action(
+    struct environment* env,
+    size_t grid_idx,
+    creature_action_t action) {
+
+    while(action != ACTION_NONE) {
+        if(action & ACTION_MOVE_LEFT) {
+            size_t x = common_get_col(grid_idx, env->width);
+            if(x > 0) x--;
+            size_t new_grid_idx = common_get_idx(
+                x,
+                common_get_row(grid_idx, env->width),
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_LEFT;
+            break;
+        }
+        if(action & ACTION_MOVE_RIGHT) {
+            size_t x = common_get_col(grid_idx, env->width);
+            if(x < env->width - 1) x++;
+            size_t new_grid_idx = common_get_idx(
+                x,
+                common_get_row(grid_idx, env->width),
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_RIGHT;
+            break;
+        }
+        if(action & ACTION_MOVE_UP) {
+            size_t y = common_get_row(grid_idx, env->width);
+            if(y > 0) y--;
+            size_t new_grid_idx = common_get_idx(
+                common_get_col(grid_idx, env->width),
+                y,
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_UP;
+            break;
+        }
+        if(action & ACTION_MOVE_DOWN) {
+            size_t y = common_get_row(grid_idx, env->width);
+            if(y < env->height - 1) y++;
+            size_t new_grid_idx = common_get_idx(
+                common_get_col(grid_idx, env->width),
+                y,
+                env->width);
+            environment_move_creature(env, grid_idx, new_grid_idx);
+            action &= ~ACTION_MOVE_DOWN;
+            break;
+        }
+    }
+}
 
 void environment_select(
     struct environment* env,
@@ -365,11 +325,11 @@ bool environment_move_creature(
     if(creature_is_dead(env->grid[grid_idx_src])) return false;
     if(creature_is_alive(env->grid[grid_idx_dst])) return false;
 
-    // #pragma omp critical 
+    // #pragma omp critical
     {
-    env->grid[grid_idx_dst] = env->grid[grid_idx_src];
-    // src is no longer valid
-    env->grid[grid_idx_src] = NULL;
+        env->grid[grid_idx_dst] = env->grid[grid_idx_src];
+        // src is no longer valid
+        env->grid[grid_idx_src] = NULL;
     }
 
     return true;
@@ -405,10 +365,5 @@ void environment_creature_consolidate(struct environment* env) {
 void environment_destroy(struct environment* env) {
     free(env->creatures);
     free(env->grid);
-
-#if defined(THREADED) && THREADED == 1
-    pool_destroy(env->thread_pool);
-#endif
-
     free(env);
 }

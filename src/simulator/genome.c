@@ -97,7 +97,7 @@ activation_sigmoid_approx(float value, float weight) {
 #endif
 
 // PRIV_FN int8_t gene_sense(uint8_t gene, grid_state_t state) {
-// #define SENSE_CASE(name)                                                       \
+// #define SENSE_CASE(name) \
 //     case GENE_##name: return (state & S_##name) ? INT8_MAX : INT8_MIN
 //     switch(gene) {
 //         SENSE_CASE(WALL_LEFT);
@@ -125,7 +125,15 @@ PRIV_FN float gene_sensef(uint8_t gene, grid_state_t state) {
         SENSE_CASE(CREATURE_RIGHT);
         SENSE_CASE(CREATURE_UP);
         SENSE_CASE(CREATURE_DOWN);
-        case GENE_CREATURE_MASS: return scale_b2f(_mm_popcnt_u32(state & S_CREATURE_LEFT & S_CREATURE_RIGHT & S_CREATURE_UP & S_CREATURE_DOWN), 0, 4, -1.0, 1.0);
+        case GENE_CREATURE_MASS:
+            return scale_b2f(
+                _mm_popcnt_u32(
+                    state & S_CREATURE_LEFT & S_CREATURE_RIGHT & S_CREATURE_UP &
+                    S_CREATURE_DOWN),
+                0,
+                4,
+                -1.0,
+                1.0);
         default: return 0;
     }
 #undef SENSE_CASE

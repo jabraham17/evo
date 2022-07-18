@@ -43,9 +43,6 @@ struct environment {
     struct creature* creatures;
     size_t n_creatures;
     struct creature** grid; // pointers to `creatures` array
-#if defined(THREADED) && THREADED == 1
-    struct ptp_pool* thread_pool;
-#endif
     struct environment_args* args;
 };
 
@@ -64,7 +61,13 @@ enum grid_state {
 typedef uint32_t grid_state_t;
 _Static_assert(sizeof(enum grid_state) == sizeof(grid_state_t), "");
 
-enum selection_criteria { SELECTION_LEFT, SELECTION_RIGHT, SELECTION_CENTER, SELECTION_BR_CORNER, SELECTION_LONELY };
+enum selection_criteria {
+    SELECTION_LEFT,
+    SELECTION_RIGHT,
+    SELECTION_CENTER,
+    SELECTION_BR_CORNER,
+    SELECTION_LONELY
+};
 
 struct environment_callback_data {
     struct environment* env;
@@ -95,6 +98,11 @@ void environment_run_generation(
     environment_callback_t callback);
 void environment_next_generation(struct environment*);
 void environment_microtick(struct environment*);
+
+void environment_apply_action(
+    struct environment* env,
+    size_t grid_idx,
+    creature_action_t action);
 
 void environment_select(
     struct environment*,
