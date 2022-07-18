@@ -83,27 +83,7 @@ void mkdirs(char* dirnames) {
 
 int main(UNUSED int argc, UNUSED const char** argv) {
 
-    struct environment_args env_args = {
-        .seed = time(0),
-        .output_dir = "output",
-        .output_scale = 4,
-        .callback_tick = 0,
-        .callback_start = 1,
-        .callback_end = 1,
-        .callback_select = 0,
-        .callback_tick_freq = 10,
-        .width = 128,
-        .height = 128,
-        .n_creatures = 1000,
-        .n_generations = 30,
-        .n_ticks = 150,
-        .threshold = 80,
-        .n_connections = 10,
-        .mutation_rate = 0.01,
-#if defined(THREADED) && THREADED == 1
-        .n_threads = 1
-#endif
-    };
+    struct environment_args env_args = ENVIRONMENT_DEFAULT_ARGS;
 
     // https://linux.die.net/man/3/popt
     //  struct poptOption {
@@ -119,18 +99,19 @@ int main(UNUSED int argc, UNUSED const char** argv) {
     // design for arg parser
 
     // bitmasks: POPT_ARG_NONE, POPT_ARG_BOOL, POPT_ARG_BOOL_NEGATABLE,
-    // POPT_ARG_STRING, POPT_ARG_INT, POPT_ARG_FLOAT, POPT_ARGFLAG_SHOW_DEFAULT,
-    // POPT_ARGFLAG_CUSTOM, POPT_ARG_CHECK POPT_ARGFLAG_OR, POPT_ARGFLAG_AND, or
-    // POPT_ARGFLAG_XOR, POPT_ARGFLAG_NOT POPT_ARGFLAG_ONEDASH
+    // POPT_ARG_OPTIONS POPT_ARG_STRING, POPT_ARG_INT, POPT_ARG_FLOAT,
+    // POPT_ARGFLAG_SHOW_DEFAULT, POPT_ARGFLAG_CUSTOM, POPT_ARG_CHECK
+    // POPT_ARGFLAG_OR, POPT_ARGFLAG_AND, or POPT_ARGFLAG_XOR,
+    // POPT_ARGFLAG_NOT POPT_ARGFLAG_ONEDASH
 
     //  struct myopt {
     //    const char* longName; // if NULL, none
     //    char shortName; // if 0, none
     //    int argInfo; // bitmask
     //    void* argVar; // set according to bitmask
-    // if bitmask has 'custom', argVar is not set but set in a custom handler
-    // if bitmask has 'check', this func is called after argVar is set to
-    // provide custom handling
+    // if bitmask has 'custom', argVar is not set but set in a custom
+    // handler if bitmask has 'check', this func is called after argVar is
+    // set to provide custom handling
     //    void* argFunc; // (void* argVar) -> int
     //    int val; // value to return, can be used to invert booleans
     //    char* descrip;

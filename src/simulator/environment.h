@@ -28,10 +28,39 @@ struct environment_args {
     int threshold;
     size_t n_connections;
     float mutation_rate;
+    char* selection_criteria;
 
 #if defined(THREADED) && THREADED == 1
     size_t n_threads;
 #endif
+};
+
+#if defined(THREADED) && THREADED == 1
+    #define DEFAULT_N_THREADS .n_threads = 1,
+#else
+    #define DEFAULT_N_THREADS
+#endif
+#define ENVIRONMENT_DEFAULT_ARGS                                               \
+    {                                                                          \
+        .seed = time(0), .output_dir = "output", .output_scale = 4,            \
+        .callback_tick = 0, .callback_start = 1, .callback_end = 1,            \
+        .callback_select = 0, .callback_tick_freq = 10, .width = 128,          \
+        .height = 128, .n_creatures = 1000, .n_generations = 30,               \
+        .n_ticks = 150, .threshold = 80, .n_connections = 10,                  \
+        .mutation_rate = 0.01, .selection_criteria = "LEFT", DEFAULT_N_THREADS \
+    }
+
+#define SELECTION_CRITERIA(V)                                                  \
+    V(LEFT)                                                                    \
+    V(RIGHT)                                                                   \
+    V(CENTER)                                                                  \
+    V(BR_CORNER)                                                               \
+    V(LONELY)
+
+enum selection_criteria {
+#define MAKE_CASE(N) SELECTION_##N,
+    SELECTION_CRITERIA(MAKE_CASE)
+#undef MAKE_CASE
 };
 
 // a feature of this environment, all the memory is together
@@ -44,6 +73,7 @@ struct environment {
     size_t n_creatures;
     struct creature** grid; // pointers to `creatures` array
     struct environment_args* args;
+    enum selection_criteria selection;
 };
 
 enum grid_state {
@@ -60,14 +90,6 @@ enum grid_state {
 };
 typedef uint32_t grid_state_t;
 _Static_assert(sizeof(enum grid_state) == sizeof(grid_state_t), "");
-
-enum selection_criteria {
-    SELECTION_LEFT,
-    SELECTION_RIGHT,
-    SELECTION_CENTER,
-    SELECTION_BR_CORNER,
-    SELECTION_LONELY
-};
 
 struct environment_callback_data {
     struct environment* env;

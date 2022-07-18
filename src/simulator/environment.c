@@ -50,6 +50,15 @@ PRIV_FN size_t find_last_alive_creature(struct environment* env) {
     return env->n_creatures; // return size if none found
 }
 
+PRIV_FN enum selection_criteria get_criteria(char* s) {
+#define MAKE_CASE(N)                                                           \
+    if(strcmp(s, #N) == 0) return SELECTION_##N;
+    SELECTION_CRITERIA(MAKE_CASE)
+#undef MAKE_CASE
+
+    return SELECTION_LEFT;
+}
+
 #undef PRIV_FN
 
 // public
@@ -61,6 +70,7 @@ struct environment* environment_create(struct environment_args* args) {
     env->n_creatures = 0;
     env->grid = calloc(env->width * env->height, sizeof(*env->grid));
     env->args = args;
+    env->selection = get_criteria(args->selection_criteria);
 
 #if defined(THREADED) && THREADED == 1
     omp_set_num_threads(env->args->n_threads);
@@ -178,7 +188,7 @@ void environment_run_simulation(
         if(env->args->callback_end && generation_end_callback)
             generation_end_callback(&d);
 
-        environment_select(env, SELECTION_BR_CORNER);
+        environment_select(env, env->selection);
         if(env->args->callback_select && generation_select_callback)
             generation_select_callback(&d);
 
