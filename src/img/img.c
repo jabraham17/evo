@@ -4,12 +4,11 @@
 #include <stdlib.h>
 
 // PRIVATE
-static img_pixel_t* make_pixel(uint8_t blue, uint8_t green, uint8_t red) {
-    img_pixel_t* pixel = malloc(sizeof(*pixel));
+static void
+set_pixel(img_pixel_t* pixel, uint8_t blue, uint8_t green, uint8_t red) {
     pixel->blue = blue;
     pixel->green = green;
     pixel->red = red;
-    return pixel;
 }
 
 // PUBLIC
@@ -23,13 +22,9 @@ img_t* img_create(size_t width, size_t height) {
 }
 
 size_t img_get_size(img_t* img) { return img->width * img->height; }
-void img_set_pixel(img_t* img, img_pixel_t* pixel, size_t col, size_t row) {
-    size_t idx = common_get_idx(col, row, img->width);
-    img->pixels[idx] = pixel;
-}
 img_pixel_t* img_get_pixel(img_t* img, size_t col, size_t row) {
     size_t idx = common_get_idx(col, row, img->width);
-    return img->pixels[idx];
+    return &img->pixels[idx];
 }
 void img_set_bgr(
     img_t* img,
@@ -38,15 +33,11 @@ void img_set_bgr(
     uint8_t red,
     size_t col,
     size_t row) {
-    img_pixel_t* pixel = make_pixel(blue, green, red);
-    img_set_pixel(img, pixel, col, row);
+    img_pixel_t* pixel = img_get_pixel(img, col, row);
+    set_pixel(pixel, blue, green, red);
 }
 
 void img_destroy(img_t* img) {
-    size_t size = img_get_size(img);
-    for(size_t i = 0; i < size; i++) {
-        if(img->pixels[i]) free(img->pixels[i]);
-    }
     free(img->pixels);
     free(img);
 }

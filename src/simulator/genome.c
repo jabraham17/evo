@@ -112,7 +112,13 @@ activation_sigmoid_approx(float value, float weight) {
 //     }
 // #undef SENSE_CASE
 // }
-#include <immintrin.h>
+
+#ifdef __x86_64__
+    #include <immintrin.h>
+    #define popcnt _mm_popcnt_u32
+#else
+    #define popcnt __builtin_popcount
+#endif
 PRIV_FN float gene_sensef(uint8_t gene, grid_state_t state) {
 #define SENSE_CASE(name)                                                       \
     case GENE_##name: return (state & S_##name) ? -1.0 : 1.0
@@ -127,9 +133,9 @@ PRIV_FN float gene_sensef(uint8_t gene, grid_state_t state) {
         SENSE_CASE(CREATURE_DOWN);
         case GENE_CREATURE_MASS:
             return scale_b2f(
-                _mm_popcnt_u32(
-                    state & S_CREATURE_LEFT & S_CREATURE_RIGHT & S_CREATURE_UP &
-                    S_CREATURE_DOWN),
+                popcnt(
+                    state & (S_CREATURE_LEFT & S_CREATURE_RIGHT &
+                             S_CREATURE_UP & S_CREATURE_DOWN)),
                 0,
                 4,
                 -1.0,

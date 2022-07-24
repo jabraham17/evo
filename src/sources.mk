@@ -22,7 +22,6 @@ LIBRARIES_FILE_NAMES=$(patsubst %,$(LIB_DIRECTORY)lib%.a,$(LIBRARIES))
 override LDLIBS+=$(patsubst %,-l%,$(LIBRARIES))
 
 .DEFAULT_GOAL: all
-.PHONY: all
 all: $(OBJ_PATH) $(TARGET)
 	@:
 

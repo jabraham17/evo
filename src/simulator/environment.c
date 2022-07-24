@@ -76,6 +76,7 @@ struct environment* environment_create(struct environment_args* args) {
     omp_set_num_threads(env->args->n_threads);
 #endif
 
+
     environment_add_creatures(env, args->n_creatures);
     for(size_t i = 0; i < env->n_creatures; i++) {
         creature_init(&env->creatures[i], SPECIES_A, env->args->n_connections);
@@ -95,7 +96,7 @@ void environment_add_creatures(struct environment* env, size_t n_creatures) {
         env->creatures =
             realloc(env->creatures, env->n_creatures * sizeof(*env->creatures));
 
-    // zero new creartures
+    // zero new creatures
     memset(
         &env->creatures[starting],
         0,
@@ -169,6 +170,7 @@ environment_get_grid_state(struct environment* env, size_t grid_idx) {
 
     return state;
 }
+
 
 void environment_run_simulation(
     struct environment* env,

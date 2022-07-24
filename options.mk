@@ -29,6 +29,13 @@ $(error Unsupported build on $(OS))
 endif
 AS=nasm
 
+WASM=0
+ifeq ($(WASM), 1)
+CC=emcc
+LD:=$(CC)
+AR=${EMSDK}/upstream/bin/llvm-ar
+RANLIB=${EMSDK}/upstream/bin/llvm-ranlib
+endif
 
 VERBOSE=0
 ifeq ($(VERBOSE),0)
@@ -63,10 +70,9 @@ override CFLAGS+= -O3
 endif
 
 override CFLAGS+= -Wall -Wextra
-override CFLAGS+= -masm=intel
 override CFLAGS+= -std=c11
 override CFLAGS+= -D_XOPEN_SOURCE=700
-override CFLAGS+= -ffast-math -mpopcnt
+override CFLAGS+= -ffast-math
 override ASFLAGS+=
 override LDFLAGS+=
 override LDFLAGS_FINAL+=
@@ -74,16 +80,27 @@ override INCLUDE+=
 override YFLAGS+= -Wall
 override LFLAGS+=
 
+ifeq ($(WASM),1)
+override CFLAGS+= -DWASM=1
+else
+override CFLAGS+= -mpopcnt -masm=intel
+endif
+
 # -L/usr/local/opt/zlib/lib
 # -I/usr/local/opt/zlib/include
+
+#only enable these for non wasm
+ifeq ($(WASM),0)
+
 ifeq ($(OS),Darwin)
 override LDFLAGS+= -L/usr/local/opt/llvm/lib -L/usr/local/lib -lpopt -lz
 override LDFLAGS_FINAL+= -Wl,-rpath,/usr/local/opt/llvm/lib
 override INCLUDE+= -I/usr/local/opt/llvm/include -I/usr/local/include
-endif
-ifeq ($(OS),Linux)
+else ifeq ($(OS),Linux)
 override LDFLAGS+= -lpopt -lz -lm
 override INCLUDE+= -I/usr/include
+endif
+
 endif
 
 THREADED=0

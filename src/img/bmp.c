@@ -113,7 +113,7 @@ bmp_t* bmp_create_from_img(img_t* img) {
         size_t bmp_row = i;
         for(size_t col = 0; col < width; col++) {
             size_t img_idx = common_get_idx(col, img_row, width);
-            img_pixel_t* pixel = img->pixels[img_idx];
+            img_pixel_t* pixel = &img->pixels[img_idx];
             if(pixel) {
                 size_t bmp_idx =
                     bmp_get_data_idx(col, bmp_row, width, bits_per_pixel);

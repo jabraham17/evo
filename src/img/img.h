@@ -11,14 +11,13 @@ typedef struct {
 } img_pixel_t;
 
 typedef struct {
-    img_pixel_t** pixels;
+    img_pixel_t* pixels;
     size_t width;
     size_t height;
 } img_t;
 
 img_t* img_create(size_t width, size_t height);
 size_t img_get_size(img_t*);
-void img_set_pixel(img_t*, img_pixel_t*, size_t col, size_t row);
 img_pixel_t* img_get_pixel(img_t*, size_t col, size_t row);
 void img_set_bgr(
     img_t*,

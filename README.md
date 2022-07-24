@@ -116,5 +116,6 @@ ffmpeg -y -r 30 -f image2 -s 256x256 -pattern_type glob -i "/Volumes/Evo/test/ge
 - improve build system cross compatibly and working out of the box
     fix library includes, things are included where they shouldn't due to overrides of LDLIBS
 - wasm
+  - https://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element
 - video encode
   - https://www.ffmpeg.org/doxygen/3.3/encode_video_8c-example.html

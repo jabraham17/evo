@@ -1,7 +1,16 @@
 -include $(ROOT_PROJECT_DIRECTORY)options.mk
 
 TOPTARGETS=all clean cppcheck
-SUBDIRS= simulator common img viz dot evo dumpbrain zpipe
+SUBDIRS= simulator common img viz dot
+
+ifeq ($(WASM),0)
+# native targets
+SUBDIRS+= evo dumpbrain zpipe
+else
+# wasm targets
+SUBDIRS+= evo-wasm
+endif
+
 # ifeq ($(THREADED),1)
 # SUBDIRS+= pthreadpool
 # endif
