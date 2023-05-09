@@ -1,6 +1,6 @@
 
 #include "img.h"
-#include "common/common.h"
+#include "common.h"
 #include <stdlib.h>
 
 // PRIVATE

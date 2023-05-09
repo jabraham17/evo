@@ -20,15 +20,4 @@ clampd(int32_t value, int32_t min, int32_t max);
 __attribute__((always_inline)) int64_t
 clampq(int64_t value, int64_t min, int64_t max);
 
-#define SCALE_FUNC(typein, typeout)                                            \
-    __attribute__((always_inline)) TYPE_MAP(typeout)                           \
-        scale_##typein##2##typeout(                                            \
-            TYPE_MAP(typein) value,                                            \
-            TYPE_MAP(typein) oldMin,                                           \
-            TYPE_MAP(typein) oldMax,                                           \
-            TYPE_MAP(typeout) newMin,                                          \
-            TYPE_MAP(typeout) newMax)
-#include "scale_func.def"
-#undef SCALE_FUNC
-
 #endif

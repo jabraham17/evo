@@ -1,36 +1,19 @@
 
-MKFILE_PATH=$(abspath $(lastword $(MAKEFILE_LIST)))
-MKFILE_DIR=$(dir $(MKFILE_PATH))
-export ROOT_PROJECT_DIRECTORY=$(MKFILE_DIR)
+CHPL=chpl
+SRC=src
+BUILD=build
+TARGET=evo
 
-TOPTARGETS=all cppcheck
-SUBDIRS=src
-.PHONY: $(TOPTARGETS)
+DIRS=dot img viz
+CHPL_SOURCES=$(wildcard $(SRC)/*.chpl) $(wildcard $(SRC)/*/*.chpl) $(wildcard $(SRC)/*/*/*.chpl)
 
--include options.mk
 
-all: $(BUILD_DIRECTORY) $(BIN_DIRECTORY) $(LIB_DIRECTORY) $(OBJ_DIRECTORY)
-	@:
+CHPL_FLAGS_=
+CHPL_FLAGS_+= $(CHPL_FLAGS)
+CHPL_FLAGS_+= --permit-unhandled-module-errors
 
-$(BUILD_DIRECTORY) $(BIN_DIRECTORY) $(LIB_DIRECTORY) $(OBJ_DIRECTORY):
-	$(AT)mkdir -p $@
+$(BUILD)/$(TARGET): $(CHPL_SOURCES)
+	@mkdir -p $(BUILD)
+	$(CHPL) $(SRC)/$(TARGET)/main.chpl $(CHPL_FLAGS_) $(foreach d,$(DIRS),--module-dir $(SRC)/$(d)) -o $@ 
 
-clean:
-	$(RM) -r $(BUILD_DIRECTORY)
-
-$(TOPTARGETS): $(SUBDIRS)
-
-.PHONY: $(SUBDIRS)
-$(SUBDIRS):
-	@echo "MAKE -C $@ $(MAKECMDGOALS)"
-	@$(MAKE) --no-print-directory -C $@ $(MAKECMDGOALS)
-
-.PHONY: dump_paths
-dump_paths:
-	$(info CC=$(CC_1))
-	$(info LD=$(LD_1))
-	$(info YACC=$(YACC_1))
-	$(info LEX=$(LEX_1))
-	$(info AR=$(AR_1))
-	$(info RANLIB=$(RANLIB_1))
 
