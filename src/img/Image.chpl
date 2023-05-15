@@ -62,6 +62,9 @@ module Image {
     proc set(col: uint, row: uint, blue: uint(8), green: uint(8), red: uint(8)) {
       img_set_bgr(this.img_handle_, blue, green , red, col:c_size_t, row:c_size_t);
     }
+    proc set(pos: 2*uint, bgr:3*uint(8)) {
+      img_set_bgr(this.img_handle_, bgr[0], bgr[1] , bgr[2], pos[0]:c_size_t, pos[1]:c_size_t);
+    }
 
     proc saveAsBMP(filename:string) {
       var bmp = bmp_create_from_img(this.img_handle_);

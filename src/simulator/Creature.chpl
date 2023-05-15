@@ -197,11 +197,9 @@ module Creature {
                   !geneIsUsed(sink, c(source));
           var C = c.isInternal(sink) &&
                   !geneIsUsed(source, c(sink));
-          // writeln((c:string, c.isInternal(source), c.isInternal(sink)));
-          // var  B, C = false;
           if A || B || C {
             changed = true;
-            writeln("Pruning because ", (A, B, C), " ", connections[i]:string);
+            // writeln("Pruning because ", (A, B, C), " ", connections[i]:string);
             // overwrite this connection with the last connection
             connections[i] = connections[numConnections - 1];
             numConnections-=1;
