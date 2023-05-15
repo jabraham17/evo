@@ -1,28 +1,25 @@
 module Main {
-  use Image;
-  config var filename = "test.bmp";
+  use Creature;
+  use IO;
+
   proc main() {
-    var img = new image(1024, 1024);
+    var c = new genome(10, 32);
+    c.prettyPrint();
+    writeln("="*80);
 
-    proc writeTile(in col, in row, blue:uint(8)) {
-      col = col*256;
-      row = row*256;
-      forall c in col..(col+255) by 8 {
-        forall r in row..(row+255) by 8 {
-          writeln((c, r));
-          for i in 0..<8 {
-            for j in 0..<8 {
-              img.set(c+i,r+j, blue, c:uint(8), r:uint(8));
-            }
-          }
-        }
-      }
-    } 
+    {
+      var dot = c.toDot();
+      var w = openWriter("brain.dot");
+      w.write(dot:string);
+    }
 
-    writeTile(0, 0, 0);
-    writeTile(1, 1, 85);
-    writeTile(2, 2, 170);
-    writeTile(3, 3, 255);
-    img.saveAsBMP(filename);
+    c.prune();
+    {
+      c.prettyPrint();
+      var dot = c.toDot();
+      var w = openWriter("pruned.dot");
+      w.write(dot:string);
+    }
   }
+
 }

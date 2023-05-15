@@ -119,10 +119,13 @@ module Dot {
       return parent != nil;
     }
 
-     proc toString() {
-      var indent: int = 0;
-      return toString(indent);
-     }
+    operator :(a: this.type, type t: string) {
+      return a.toString();
+    }
+    proc toString() {
+    var indent: int = 0;
+    return toString(indent);
+    }
     proc toString(ref indent: int): string {
       var buff = "";
       proc attrsToString(attrs: AttributeSet, prefix="[", postfix="]") {
