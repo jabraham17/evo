@@ -8,7 +8,20 @@ proc main() {
     row = row*256;
     forall c in col..(col+255) by 8 {
       forall r in row..(row+255) by 8 {
-        writeln((c, r));
+        for i in 0..<8 {
+          for j in 0..<8 {
+            img.set(c+i,r+j, blue, c:uint(8), r:uint(8));
+          }
+        }
+      }
+    }
+  } 
+
+    proc writeTile2(in col, in row, blue:uint(8)) {
+    col = col*256;
+    row = row*256;
+    forall c in col..(col+255) by 8 {
+      forall r in row..(row+255) by 8 {
         for i in 0..<8 {
           for j in 0..<8 {
             img.set(c+i,r+j, blue, c:uint(8), r:uint(8));
