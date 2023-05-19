@@ -26,8 +26,9 @@ module Main {
 
 
   var env = new environment();
-  var img = env.toImg();
-  img.saveAsBMP("out.bmp");
+  env.toImg().saveAsBMP("out.bmp");
+  env.runGeneration();
+  env.toImg().saveAsBMP("out2.bmp");
   }
 
 }

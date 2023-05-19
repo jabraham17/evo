@@ -4,13 +4,66 @@ module Creature {
   use MyBitOps;
   import Dot;
   use IO.FormattedIO;
+  use Environment only sliceState;
+  use Math;
 
   config param genomeMaxConnections: uint = 16;
+  config var expressThreshold: uint = 80;
+
+  record creatureAction {
+    var moveLeft: uint = 0;
+    var moveRight: uint = 0;
+    var moveUp: uint = 0;
+    var moveDown: uint = 0;
+
+    proc setForGene(gene: geneTypeSink) {
+      use geneTypeSink;
+      select(gene) {
+        when ACTION_MOVE_LEFT do moveLeft = 1;
+        when ACTION_MOVE_RIGHT do moveRight = 1;
+        when ACTION_MOVE_UP do moveUp = 1;
+        when ACTION_MOVE_DOWN do moveDown = 1;
+      }
+    }
+    proc clearForGene(gene: geneTypeSink) {
+      use geneTypeSink;
+      select(gene) {
+        when ACTION_MOVE_LEFT do moveLeft = 0;
+        when ACTION_MOVE_RIGHT do moveRight = 0;
+        when ACTION_MOVE_UP do moveUp = 0;
+        when ACTION_MOVE_DOWN do moveDown = 0;
+      }
+    }
+    proc getPosOffset() {
+      var leftNeg = -(moveLeft:int);
+      var upNeg = -(moveUp:int);
+      return (leftNeg + moveRight:int, upNeg + moveDown:int);
+    }
+  }
 
   class creature {
     var dna: genome;
     proc init(numConnections: uint) {
       this.dna = new genome(numConnections);
+    }
+
+    proc express(state: sliceState) {
+      use geneField;
+      var action = new creatureAction();
+      for i in 0..<dna.numConnections:int {
+        // if the sink is an output
+        if !dna.connections[i].isInternal(sink) {
+          var expressed:uint(8) = scale(
+                dna.geneExpress(i, state), min(uint(8)), max(uint(8)), -1.0, 1.0);
+          if(expressed > expressThreshold) {
+            action.setForGene(dna.connections[i](sink):geneTypeSink);
+          }
+          else if(abs(expressed) > expressThreshold) {
+            action.clearForGene(dna.connections[i](sink):geneTypeSink);
+          }
+        }
+      }
+      return action;
     }
   }
 
@@ -21,6 +74,9 @@ module Creature {
                               (oldMax:resultType - oldMin:resultType) +
                               resultMin;
     return result;
+  }
+  proc sigmoid(value, weight) {
+    return (2.0 / (1.0 + exp(-1.0 * value * weight))) - 1.0;
   }
 
   enum geneField {
@@ -209,6 +265,52 @@ module Creature {
         }
       }
     }
+
+    proc geneSense(gene: geneTypeSource, state: sliceState): real {
+      use geneTypeSource;
+      select(gene) {
+        when SENSE_WALL_LEFT do return if state.distanceToObstacleLeft then 1 else -1;
+        when SENSE_WALL_RIGHT do return if state.distanceToObstacleRight then 1 else -1;
+        when SENSE_WALL_UP do return if state.distanceToObstacleUp then 1 else -1;
+        when SENSE_WALL_DOWN do return if state.distanceToObstacleDown then 1 else -1;
+        when SENSE_CREATURE_LEFT do return if state.envSlice[-1, 0] != nil then 1 else -1;
+        when SENSE_CREATURE_RIGHT do return if state.envSlice[1, 0] != nil then 1 else -1;
+        when SENSE_CREATURE_UP do return if state.envSlice[0, -1] != nil then 1 else -1;
+        when SENSE_CREATURE_DOWN do return if state.envSlice[0, 1] != nil then 1 else -1;
+      }
+      return 0;
+    }
+
+    proc geneExpress(idx: integral, state: sliceState): real {
+      // express 1 gene, follow connection chain
+      // given current idx to a connection, find everyone who sinks to the source
+      // recursively call, sum and apply activation
+      var inputs = 0.0;
+      var c = connections[idx];
+      var source = c(geneField.source);
+      var weight: real = scale(c(geneField.weight):uint(16), -4.0, 4.0);
+
+
+      // if source is an input
+      if !c.isInternal(geneField.source) {
+        inputs = geneSense(c(geneField.source):geneTypeSource, state);
+        
+      }
+      // if sink is internal
+      else if c.isInternal(geneField.sink) {
+        for i in 0..<numConnections {
+          if i == idx then continue;
+          // if a connection sinks to oir source, then we need to calculate it
+          if connections[i](geneField.sink) == source {
+            inputs += geneExpress(i, state);
+          }
+        }
+      }
+      // TODO: based on config, select activation func
+      var activated = sigmoid(inputs, weight);
+      return activated;
+    }
+
 
     proc geneIsUsed(param which: geneField, gene: ?t)
       where which == geneField.source || which == geneField.sink {
