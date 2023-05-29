@@ -8,6 +8,8 @@ debug
 *.bmp
 *.dot
 *.mp4
+.tags
+.tagsrc
 
 !images
 !images/*
