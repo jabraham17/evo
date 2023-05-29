@@ -10,6 +10,7 @@ debug
 *.mp4
 .tags
 .tagsrc
+*.qoi
 
 !images
 !images/*
