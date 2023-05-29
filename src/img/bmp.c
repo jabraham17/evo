@@ -1,6 +1,6 @@
 
 #include "bmp.h"
-#include "common.h"
+#include "helper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -128,7 +128,7 @@ bmp_t* bmp_create_from_img(img_t* img) {
 
 // TODO: rwrite to write to a block of memory and reurn the block of memory
 // then a separate func copies the block of memory to a file
-void bmp_write_to_file(bmp_t* bmp, char* filename) {
+void bmp_write_to_file(bmp_t* bmp, const char* filename) {
     void* dib_struct = NULL;
     size_t dib_len = 0;
     if(bmp->dib.type == BMP_DIB_BITMAPINFOHEADER) {

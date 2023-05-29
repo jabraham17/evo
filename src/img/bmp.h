@@ -48,7 +48,7 @@ typedef struct {
 // } BMP_PACKED bmp_printable_t;
 
 bmp_t* bmp_create_from_img(img_t*);
-void bmp_write_to_file(bmp_t*, char* filename);
+void bmp_write_to_file(bmp_t*, const char* filename);
 void bmp_destroy(bmp_t*);
 
 #endif
