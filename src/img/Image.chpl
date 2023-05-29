@@ -5,8 +5,8 @@ also wraps C bindings to generate simple bmp files
 module Image {
   use CTypes;
 
-  require "common.h";
-  require "common.c";
+  require "helper.h";
+  require "helper.c";
 
   require "img.h";
   require "img.c";
@@ -24,10 +24,10 @@ module Image {
 
   private extern proc img_create(width: c_size_t, height: c_size_t): c_ptr(img_t);
   private extern proc img_get_size(img: c_ptr(img_t)): c_size_t;
-  private extern proc img_get_pixel(img: c_ptr, 
+  private extern proc img_get_pixel(img: c_ptr,
                                 col: c_size_t,
                                 row: c_size_t): c_ptr(img_pixel_t);
-  private extern proc img_set_bgr(img: c_ptr, 
+  private extern proc img_set_bgr(img: c_ptr,
                               blue: uint(8),
                               green: uint(8),
                               red: uint(8),
@@ -39,7 +39,7 @@ module Image {
   require "bmp.c";
 
   extern record bmp_t {
-    
+
   }
 
   private extern proc bmp_create_from_img(img: c_ptr(img_t)): c_ptr(bmp_t);
