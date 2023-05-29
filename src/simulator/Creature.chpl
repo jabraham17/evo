@@ -43,16 +43,36 @@ module Creature {
     }
   }
 
+
+  const InvalidPos: 2*int = (-1,-1);
   class creature {
     var dna: genome;
+
+    var _pos: (int, int);
+
     proc init(numConnections: uint) {
       this.dna = new genome(numConnections);
+      this._pos = InvalidPos;
     }
+    proc init(other: borrowed creature) {
+      this.dna = other.dna;
+      this._pos = other._pos;
+    }
+    operator <=>(ref lhs: creature, ref rhs: creature) {
+      lhs.dna <=> rhs.dna;
+      lhs._pos <=> rhs._pos;
+    }
+    proc hasPos do return _pos != InvalidPos;
+    proc pos()
+      do if hasPos
+        then return _pos;
+        else halt("creature has no 'pos'");
+    proc setPos(pos:2*int) do this._pos = pos;
 
     proc express(state: sliceState) {
       use geneField;
       var action = new creatureAction();
-      for i in 0..<dna.numConnections:int {
+      for i in 0..<dna.numConnections {
         // if the sink is an output
         if !dna.connections[i].isInternal(sink) {
           var expressed:uint(8) = scale(
@@ -276,7 +296,7 @@ module Creature {
             // writeln("Pruning because ", (A, B, C), " ", connections[i]:string);
             // overwrite this connection with the last connection
             connections[i] = connections[numConnections - 1];
-            numConnections-=1;
+            if numConnections > 0 then numConnections-=1;
             i-=1;
           }
           i+=1;
