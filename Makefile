@@ -17,6 +17,8 @@ CHPL_FLAGS_+= -scPtrToStringBytesBufferAddress=true
 
 ifeq ($(DEBUG),1)
 CHPL_FLAGS_+= --target-compiler=gnu -g --preserve-inlined-line-numbers --savec $(BUILD)/$(TARGET).src.c
+else
+CHPL_FLAGS_+= --fast
 endif
 ifeq ($(EMIT_LLVM),1)
 CHPL_FLAGS_+= --target-compiler=llvm --savec $(BUILD)/$(TARGET).src.llvm
