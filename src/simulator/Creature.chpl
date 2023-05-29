@@ -9,6 +9,8 @@ module Creature {
 
   config param genomeMaxConnections: uint = 16;
   config var expressThreshold: uint = 80;
+  config var mutationRateWeight: real = 0.1; // between 0 and 100
+  config var mutationRateConnection: real = 0.1; // between 0 and 100
 
   record creatureAction {
     var moveLeft: uint = 0;
@@ -65,11 +67,23 @@ module Creature {
       }
       return action;
     }
+    proc mutate() {
+      var rng = createRandomStream(real);
+      var mutateWeight = rng.getNext(0, 100) < mutationRateWeight;
+      var mutateConnection = rng.getNext(0, 100) < mutationRateConnection;
+      this.dna.mutate(mutateWeight, mutateConnection);
+    }
+    proc prettyPrint() {
+      writeln("Creature");
+      this.dna.prettyPrint();
+    }
+    proc uniqueColor() do return this.dna.uniqueColor();
+    proc brainSize do return this.dna.numConnections;
   }
 
 
   proc scale(value: ?valueType, resultMin: ?resultType, resultMax: resultType, oldMin = min(valueType), oldMax = max(valueType)): resultType {
-    var result: resultType = (resultMax - resultMin) * 
+    var result: resultType = (resultMax - resultMin) *
                               (value:resultType - oldMin:resultType) /
                               (oldMax:resultType - oldMin:resultType) +
                               resultMin;
@@ -98,6 +112,10 @@ module Creature {
     proc init(source: uint(8), sink: uint(8), weight: uint(16)) {
       this.gene = (source << 24) | (sink << 16) | weight;
     }
+    operator :(x:geneConnection, type t: int) do return x.gene:int;
+    operator :(x:geneConnection, type t: uint) do return x.gene:uint;
+    operator :(x:geneConnection, type t: uint(32)) do return x.gene;
+
     proc set(which: geneField, val) {
       use geneField;
       select(which) {
@@ -117,7 +135,7 @@ module Creature {
       halt("Should not get here");
     }
 
-    proc isInternal(param which: geneField) 
+    proc isInternal(param which: geneField)
       where which == geneField.source || which == geneField.sink {
       var v = this(which);
       return v >= min(geneTypeInternal):int && v <= max(geneTypeInternal):int;
@@ -137,7 +155,7 @@ module Creature {
 
     proc toDot(d: borrowed Dot.Graph) {
       use geneField;
-      var sourceVertexID = this(source) | 
+      var sourceVertexID = this(source) |
                             (if !this.isInternal(source) then 1 << 9 else 0);
       var sinkVertexID =   this(sink)   |
                             (if !this.isInternal(sink)   then 1 << 10 else 0);
@@ -204,10 +222,10 @@ module Creature {
   }
 
   record genome {
-    var numConnections: uint;
+    var numConnections: int;
     var connections: c_array(geneConnection, genomeMaxConnections);
-    proc init(numConnections: uint) {
-      this.numConnections = numConnections;
+    proc init(numConnections: integral) {
+      this.numConnections = numConnections.safeCast(int);
       this.connections = new c_array(geneConnection, genomeMaxConnections);
       this.complete();
       var rng = createRandomStream(uint(32));
@@ -266,6 +284,32 @@ module Creature {
       }
     }
 
+    proc mutate(mutateWeight: bool, mutateConnection: bool) {
+      var rng = createRandomStream(uint);
+      // select a connection, n+1 allows us to grow the number of connetions
+      // which we should only do if we are going to maybe mutate a connection itself
+      var idx =
+        if mutateConnection
+          then rng.getNext(0, min(numConnections+1, genomeMaxConnections))
+          else rng.getNext(0, numConnections);
+
+      ref connection = this.connections[idx];
+
+      if idx == numConnections && mutateConnection {
+        // new connection
+        connection = new geneConnection(rng.getNext(0, max(uint(32))):uint(32));
+      }
+      else {
+        if mutateWeight then connection.set(geneField.weight, rng.getNext(0, max(uint(16))));
+        if mutateConnection {
+          connection.set(geneField.sink, rng.getNext(0, max(uint(8))));
+          connection.set(geneField.source, rng.getNext(0, max(uint(8))));
+        }
+      }
+      this.normalize();
+      this.prune();
+    }
+
     proc geneSense(gene: geneTypeSource, state: sliceState): real {
       use geneTypeSource;
       select(gene) {
@@ -294,7 +338,7 @@ module Creature {
       // if source is an input
       if !c.isInternal(geneField.source) {
         inputs = geneSense(c(geneField.source):geneTypeSource, state);
-        
+
       }
       // if sink is internal
       else if c.isInternal(geneField.sink) {
