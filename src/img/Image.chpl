@@ -46,6 +46,20 @@ module Image {
   private extern proc bmp_write_to_file(bmp: c_ptr(bmp_t), filename: c_string);
   private extern proc bmp_destroy(bmp: c_ptr(bmp_t));
 
+
+  require "qoi.h";
+  require "qoi.c";
+  extern record qoi_desc {
+    var width: c_ulong;
+    var height: c_ulong;
+    var channels: c_uchar;
+    var colorspace: c_uchar;
+  }
+  const qoi_srgb: c_uchar = 0;
+  const qoi_linear: c_uchar = 1;
+  private extern proc qoi_write(filename: c_ptrConst(c_uchar), data: c_void_ptr, desc: c_ptrConst(qoi_desc)): c_int;
+  private extern proc qoi_encode(data: c_void_ptr, desc: c_ptrConst(qoi_desc), out_len: c_ptr(c_int)): c_void_ptr;
+
   record image {
     var img_handle_: c_ptr(img_t);
 
@@ -70,6 +84,16 @@ module Image {
       var bmp = bmp_create_from_img(this.img_handle_);
       bmp_write_to_file(bmp, filename.c_str());
       bmp_destroy(bmp);
+    }
+    proc saveAsQOI(filename:string) {
+      var img = img_handle_.deref();
+      var desc = new qoi_desc(img.width,
+                             img.height,
+                             3,
+                             qoi_linear
+                             );
+      var res = qoi_write(c_ptrToConst(filename), img.pixels:c_void_ptr, c_ptrToConst(desc));
+      if res == 0 then halt("failed to write file");
     }
 
   }

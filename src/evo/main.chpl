@@ -22,13 +22,13 @@ module Main {
   //     var w = openWriter("pruned.dot");
   //     w.write(dot:string);
   //   }
-  // 
+  //
 
 
   var env = new environment();
-  env.toImg().saveAsBMP("out.bmp");
-  env.runGeneration();
-  env.toImg().saveAsBMP("out2.bmp");
+  env.toImg().saveAsQOI("out.qoi");
+  env.run();
+  env.toImg().saveAsQOI("out2.qoi");
   }
 
 }
