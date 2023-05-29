@@ -373,6 +373,23 @@ module Creature {
       }
     }
 
+
+    /*returns the unique bgr for a color*/
+    proc uniqueColor(): 3*uint(8) {
+      import CantorPairing as CP;
+      use Color;
+
+      if numConnections == 0 then return (0,0,0):(3*uint(8));
+
+      var toPair: [0..<numConnections] int =
+        (for i in 0..<numConnections do connections[i]:int);
+        // [i in toPair.domain] toPair[i] = connections[i]:int;
+      var hue: uint(16) = (CP.pair(toPair) % 360):uint(16);
+      const S, V = 0.95;
+      var bgr = hsvToBgr((hue, S, V));
+      return bgr;
+    }
+
     proc toDot() {
       var d = new Dot.Graph("creature brain", true);
       d.setAttribute("splines", "curved");
