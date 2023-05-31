@@ -1,0 +1,13 @@
+./build/evo  -senvWidth=256 -senvHeight=256 -sinitialCreatures=400 -simgScaleFactor=32 -sstepsPerGeneration=300 -snumGenerations=1 -soutputEachGeneration=both -soutputOnSelection=after -soutputOnRepopulate=after -soutputOnRedistribute=both
+
+
+./build/evo  -senvWidth=32 -senvHeight=32 -sinitialCreatures=10 -simgScaleFactor=32 -sstepsPerGeneration=300 -snumGenerations=1 -soutputEachGeneration=both -soutputOnSelection=after -soutputOnRepopulate=after -soutputOnRedistribute=both
+
+
+./build/evo  -senvWidth=256 -senvHeight=256 -sinitialCreatures=400 -simgScaleFactor=32 -sstepsPerGeneration=300 -snumGenerations=300 -soutputEachGeneration=both -soutputOnSelection=after -soutputOnRepopulate=after -soutputOnRedistribute=both -soutputGenFrequency=5
+
+./build/evo  -senvWidth=256 -senvHeight=256 -sinitialCreatures=400 -simgScaleFactor=32 -sstepsPerGeneration=300 -snumGenerations=300 -soutputEachGeneration=both -soutputOnSelection=after -soutputGenFrequency=5
+
+./build/evo  -senvWidth=256 -senvHeight=256 -sinitialCreatures=400 -simgScaleFactor=4 -sstepsPerGeneration=300 -snumGenerations=300 -soutputEachGeneration=both -soutputOnSelection=after -soutputGenFrequency=5 -soutputStepFrequency=10
+
+./build/evo  -senvWidth=256 -senvHeight=256 -sinitialCreatures=1000 -simgScaleFactor=4 -sstepsPerGeneration=300 -snumGenerations=100 -soutputGenFrequency=1 -soutputStepFrequency=5

@@ -1,0 +1,29 @@
+to make this work, i need to be really explicit about the threading. (no forall).
+
+rather than trying to lock different cells and do it in an unstructured way, just structure the algo such that it cannot occur
+
+take a field (x and o represent 3x3 blocks of creatures)
+
+xoxoxoxo
+oxoxoxox
+xoxoxoxo
+oxoxoxox
+
+first pass process all the x's, then process all o's. on next tick, first prprocess o then process x.
+only thread safe if appendix A holds true, and since we alternate should be fair
+
+Appendix A:
+creature fov
+
+s can be seen
+
+ s
+sCs
+ s
+ sss
+sssss
+ssCss
+sssss
+ sss
+
+if they cant see the corners, solves the checkerboard problem for threading
