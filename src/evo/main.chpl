@@ -26,9 +26,7 @@ module Main {
 
 
   var env = new environment();
-  env.toImg().saveAsQOI("out.qoi");
   env.run();
-  env.toImg().saveAsQOI("out2.qoi");
-  }
+}
 
 }

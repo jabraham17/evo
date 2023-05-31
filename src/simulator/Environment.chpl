@@ -4,6 +4,8 @@ module Environment {
   use Image;
   use Queue;
   use Random;
+  use IO.FormattedIO;
+  import FileSystem as FS;
 
   config var envWidth: uint = 256;
   config var envHeight: uint = 256;
@@ -14,6 +16,24 @@ module Environment {
   config var stepsPerGeneration: uint = 300;
   config var numGenerations: uint = 10;
   config var selectionCriteria: criteriaType = criteriaType.left;
+
+  config var outDirectory: string = "out";
+  if FS.exists(outDirectory) then FS.rmTree(outDirectory);
+  FS.mkdir(outDirectory, parents=true);
+
+  enum outputTime {
+    neither, before, after, both
+  }
+  /* when to output an entire generation cycle*/
+  config var outputEachGeneration: outputTime = outputTime.before;
+  config var outputOnSelection: outputTime = outputTime.neither;
+  config var outputOnRedistribute: outputTime = outputTime.neither;
+  config var outputOnRepopulate: outputTime = outputTime.neither;
+  /* how often to output result of each time step (0 means none)*/
+  config var outputGenFrequency: uint = 1;
+  /* how often to output result of each time step (0 means none)*/
+  config var outputStepFrequency: uint = 0;
+
 
   enum criteriaType {
     left,right,up,down
@@ -93,6 +113,28 @@ module Environment {
         else return openSlots.pop();
     }
 
+    proc redistribute() {
+      var rng = createRandomStream(int);
+      var newGrid: [grid.domain] borrowed creature?;
+      for c in creatures {
+        // skip if nil
+        if c == nil then continue;
+
+        // regenerate positions until we find an empty slot
+        var done = false;
+        while !done {
+          const newPos = (rng.getNext(envD.low[0], envD.high[0]), rng.getNext(envD.low[1], envD.high[1]));
+          if newGrid[newPos] == nil {
+            c!.setPos(newPos);
+            newGrid[newPos] = c!.borrow();
+            // creature set, we are done
+            done = true;
+          }
+        }
+      }
+      this.grid = newGrid;
+    }
+
     proc populate(nCreatures: integral,
                   startIdx: integral = 0,
                   repopulate: bool = false) {
@@ -142,34 +184,67 @@ module Environment {
 
     }
 
+    proc _doOutputBefore(gen: integral, cntrlVar: outputTime, filename: string) do
+      if outputGenFrequency != 0 &&
+         gen % outputGenFrequency == 0 &&
+         (cntrlVar == outputTime.before || cntrlVar == outputTime.both)
+        then this.toQOI(filename);
+    proc _doOutputAfter(gen: integral, cntrlVar: outputTime, filename: string) do
+      if outputGenFrequency != 0 &&
+         gen % outputGenFrequency == 0 &&
+         (cntrlVar == outputTime.after || cntrlVar == outputTime.both)
+        then this.toQOI(filename);
+
     proc run() {
-      for 1..numGenerations {
-        runGeneration();
+      for gen in 1..numGenerations {
+        _doOutputBefore(gen, outputEachGeneration, _filenameForGen(gen, "before"));
+        runGeneration(gen);
+        _doOutputAfter(gen, outputEachGeneration, _filenameForGen(gen, "after"));
+
+        _doOutputBefore(gen, outputOnSelection, _filenameForGen(gen, "select-before"));
         selectCreatures();
-        var nextOpen = shuffleCreatures();
-        var repopulateNum = creatures.domain.high - nextOpen + 1;
-        populate(repopulateNum, startIdx=nextOpen, repopulate=true);
+        _doOutputAfter(gen, outputOnSelection, _filenameForGen(gen, "select-after"));
+
+
+        // dont redistibute on last iteration
+        if gen != numGenerations {
+          _doOutputBefore(gen, outputOnRedistribute, _filenameForGen(gen, "redistribute-before"));
+          redistribute();
+          _doOutputAfter(gen, outputOnRedistribute, _filenameForGen(gen, "redistribute-after"));
+
+          _doOutputBefore(gen, outputOnRepopulate, _filenameForGen(gen, "repopulate-before"));
+          var nextOpen = shuffleCreatures();
+          var repopulateNum = creatures.domain.high - nextOpen + 1;
+          populate(repopulateNum, startIdx=nextOpen, repopulate=true);
+          _doOutputAfter(gen, outputOnRepopulate, _filenameForGen(gen, "repopulate-after"));
+        }
       }
     }
 
-    proc runGeneration() {
-      for 1..stepsPerGeneration {
+    proc runGeneration(gen: integral) {
+      for tick in 1..stepsPerGeneration {
         runStep();
+        if outputGenFrequency != 0 &&
+           gen % outputGenFrequency == 0 &&
+           outputStepFrequency != 0 &&
+           tick % outputStepFrequency == 0
+          then this.toQOI(_filenameForTick(gen, tick));
       }
     }
 
-    proc findTheBadOne() {
-      writeln("finding bad one");
-      for pos in envD {
-        const ref c = grid[pos];
-        if c == nil then continue;
-        writeln(pos, " ", c!.brainSize);
-      }
-    }
+    proc _filenameForGen(gen: integral, qualifier:? = none)
+      where qualifier.type == string || qualifier.type == nothing
+      do if qualifier.type == string
+        then return "%s/gen-%n-%s.qoi".format(outDirectory, gen, qualifier);
+        else return "%s/gen-%n.qoi".format(outDirectory, gen);
+    proc _filenameForTick(gen: integral, tick: integral)
+      do return _filenameForGen(gen, "tick-%n".format(tick));
+    proc toQOI(filename: string)
+      do this.toImg().saveAsQOI(filename);
+
 
     proc runStep() {
       // TODO: for now run serial, we will want to make this parallel to support bigger env
-      // findTheBadOne();
       var newGrid: [grid.domain] borrowed creature?;
       for pos in envD {
         const ref c = grid[pos];
@@ -184,11 +259,13 @@ module Environment {
         // if there is no creature at the pos, move there
         // otherwise failed move
         if newGrid[newPos] == nil {
-          newGrid[newPos] <=> grid[pos];
+          c!.setPos(newPos);
+          newGrid[newPos] = c;
+
         }
 
       }
-      this.grid <=> newGrid;
+      this.grid = newGrid;
     }
   }
 
